@@ -1,6 +1,9 @@
 from collections import Counter
 from utils import mergePair
 
+
+
+
 class Trainer:
 
 
@@ -9,10 +12,12 @@ class Trainer:
 
     def train_BPE(self, numMerges: int) -> list[tuple[str, str]]:
         vocab = Counter()
+        tokens = set()
         counts = Counter(self.corpus)
         for word in self.corpus:
-            symbols = list(word) + ["_"]
+            symbols = list(word) + ["/w"]
             vocab[tuple(symbols)] += counts[word]
+            tokens.update(symbols)
 
         merges = []
 
@@ -30,6 +35,9 @@ class Trainer:
                 break
             
             bestPair = max(pairCounts, key = pairCounts.get)
+            newToken = bestPair[0] + bestPair[1]
+            tokens.add(newToken)
+
 
             newVocab = Counter()
 
@@ -40,7 +48,7 @@ class Trainer:
             vocab = newVocab
             merges.append(bestPair)
 
-        return merges, vocab
+        return merges, tokens
     
     
     
