@@ -2,15 +2,13 @@ from collections import Counter
 from utils import mergePair
 
 
-
-
 class Trainer:
 
 
-    def __init__(self, text: str):
-        self.corpus = text.split(" ")
+    def __init__(self, symbols: list[list[str]]) -> None:
+        self.symbolList = symbols
 
-    def train_BPE(self, numMerges: int) -> tuple(list[tuple[str, str]], set(str)):
+    def train_BPE(self, numMerges: int) -> tuple[list[tuple[str, str]], set[str]]:
         """
         Perform numMerges iterations of BPE 
 
@@ -23,15 +21,16 @@ class Trainer:
         """
         vocab = Counter()
         tokens = set()
-        counts = Counter(self.corpus)
-        for word in self.corpus:
-            symbols = list(word) + ["</w>"]
-            vocab[tuple(symbols)] += counts[word]
+        counts = Counter(tuple(s) for s in self.symbolList)
+
+        for symbolTuple, count in counts.items():
+            symbols = list(symbolTuple) + ["/<w>"]
+            vocab[tuple(symbols)] += count
             tokens.update(symbols)
 
         merges = []
 
-        for i in range(numMerges):
+        for _ in range(numMerges):
             
             pairCounts = Counter()
 
