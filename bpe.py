@@ -11,7 +11,7 @@ class BPE:
         return
 
     def _tokeniseWord(self, word: str):
-        symbols = list(word) + ["/w"]
+        symbols = list(word) + ["</w>"]
 
         for pair in self.merges:
 

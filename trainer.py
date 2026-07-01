@@ -10,12 +10,22 @@ class Trainer:
     def __init__(self, text: str):
         self.corpus = text.split(" ")
 
-    def train_BPE(self, numMerges: int) -> list[tuple[str, str]]:
+    def train_BPE(self, numMerges: int) -> tuple(list[tuple[str, str]], set(str)):
+        """
+        Perform numMerges iterations of BPE 
+
+        Params:
+        numMerges: Number of iterations of BPE to perform 
+
+        Returns:
+        merges: List of the pairs that were merged together
+        tokens: Set of all tokens in the vocabulary
+        """
         vocab = Counter()
         tokens = set()
         counts = Counter(self.corpus)
         for word in self.corpus:
-            symbols = list(word) + ["/w"]
+            symbols = list(word) + ["</w>"]
             vocab[tuple(symbols)] += counts[word]
             tokens.update(symbols)
 
@@ -41,7 +51,7 @@ class Trainer:
 
             newVocab = Counter()
 
-            for word, freq in vocab:
+            for word, freq in vocab.items():
                 newWord = mergePair(word, bestPair)
                 newVocab[newWord] += freq
             
