@@ -1,3 +1,6 @@
+from preprocessor import PreProcessor
+from typing import Iterator
+
 def mergePair(symbols: tuple[str], pair: tuple[str, str]):
         if "/<w>" in pair:
              return symbols
@@ -15,6 +18,13 @@ def mergePair(symbols: tuple[str], pair: tuple[str, str]):
         return tuple(result)
 
 
+def streamFileSymbols(file_path: str, preprocessor: PreProcessor) -> Iterator[list[list[str]]]:
+    with open(file_path, "r") as f:
+        for line in f:
+            if not line.strip():
+                continue
+            
+            yield preprocessor.tokenise(line)
              
 
 

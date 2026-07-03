@@ -1,12 +1,23 @@
 from collections import Counter
 from utils import mergePair
+from typing import Iterable
 
 
 class Trainer:
 
 
-    def __init__(self, symbols: list[list[str]]) -> None:
-        self.symbolList = symbols
+    def __init__(self, symbolStream: Iterable[list[list[str]]]) -> None:
+        self.vocab = Counter()
+        self.tokens = set()
+
+        for wordList in symbolStream:
+            for wordSymbols in wordList:
+                symbols = tuple(wordSymbols) + ("/<w>")
+
+                self.vocab[symbols] += 1
+                self.tokens.update(symbols)
+
+
 
     def train_BPE(self, numMerges: int) -> tuple[list[tuple[str, str]], set[str]]:
         """
@@ -19,14 +30,8 @@ class Trainer:
         merges: List of the pairs that were merged together
         tokens: Set of all tokens in the vocabulary
         """
-        vocab = Counter()
-        tokens = set()
-        counts = Counter(tuple(s) for s in self.symbolList)
-
-        for symbolTuple, count in counts.items():
-            symbols = list(symbolTuple) + ["/<w>"]
-            vocab[tuple(symbols)] += count
-            tokens.update(symbols)
+        vocab = Counter(self.vocab)
+        tokens = set(self.tokens)
 
         merges = []
 
