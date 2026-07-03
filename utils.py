@@ -1,5 +1,5 @@
 def mergePair(symbols: tuple[str], pair: tuple[str, str]):
-        if "_" in pair:
+        if "/<w>" in pair:
              return symbols
         result = []
         i = 0
@@ -13,6 +13,9 @@ def mergePair(symbols: tuple[str], pair: tuple[str, str]):
                 i += 1
 
         return tuple(result)
+
+
+             
 
 
     
