@@ -1,20 +1,22 @@
-from utils import mergePair
-from node import Node
+from datastructures.node import Node
 from heapq import heappush, heappop
+from tokeniser.preprocessor import PreProcessor
 
 class BPE:
       
     def __init__(self, merges: list[tuple[str, str]], tokens: set[str]) -> None:
         self.mergeRanks = {merge : rank for rank, merge in enumerate(merges)}
         self.vocabMapping = {}
+        self.integerMapping = {}
         tokens = sorted(tokens)
         for i, tok in enumerate(tokens):
             self.vocabMapping[tok] = i
+            self.integerMapping[i] = tok
         return
     
     def encode(self, text : list[list[str]]) -> list[list[int]]:
         """
-        Appends EOW marker to each symbol representation
+        Returns BPE representation of tokenised text
 
         Args:
         text - Preprocessed list of symbols
@@ -22,10 +24,37 @@ class BPE:
         Returns:
         text - List of symbols in their BPE representation
         """
-        for t in text:
-            t.append("/<w>")
 
-        return self._tokeniseWordSymbols(text)
+        toksWithEOW = [word + ["/<w>"] for word in text]        
+
+        return [[self.vocabMapping[token] for token in symbols] for symbols in self._tokeniseWordSymbols(toksWithEOW)]
+    
+    def decode(self, mappings: list[list[int]], preProcessor: PreProcessor) -> str:
+        """
+        Provides the raw text of a BPE encoded string
+
+        Args:
+        mappings: BPE Encoding of a string
+        preProcessor: Instance of a preprocessor
+
+        Returns:
+        Raw text of the encoded string
+        """
+        bpeToks = [[self.integerMapping[i] for i in mapping] for mapping in mappings]
+        concatStrings = []
+        for bpeTok in bpeToks:
+            bpeTok.remove("/<w>")
+            concatStrings.append("".join(bpeTok))
+
+        byteIdsByWord = [[preProcessor.byteDecoder[c] for c in concatString] for concatString in concatStrings]
+
+        byteIds = []
+        for wordBytes in byteIdsByWord:
+            byteIds.extend(wordBytes)
+
+        return bytes(byteIds).decode("utf-8")
+
+        
 
     def _tokeniseWordSymbols(self, wordSymbols: list[list[str]]) -> list[list[int]]:
         """
@@ -87,11 +116,12 @@ class BPE:
             if leftNode.prev:
                 leftNode.prev.next = newNode
                 left_pair = (newNode.prev.val, newNode.val)
-            else:
-                head = newNode
                 if left_pair in self.mergeRanks:
                     heappush(heap, (self.mergeRanks[left_pair], counter, newNode.prev, newNode))
                     counter += 1
+            else:
+                head = newNode
+                
 
             if rightNode.next:
                 rightNode.next.prev = newNode
@@ -113,6 +143,7 @@ class BPE:
             curr = curr.next
 
         return res
+    
 
 
 

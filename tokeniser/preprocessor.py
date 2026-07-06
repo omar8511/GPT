@@ -1,4 +1,3 @@
-
 import regex
 
 
@@ -6,6 +5,9 @@ class PreProcessor:
 
     def __init__(self) -> None:
         safeIndices = set()
+        SAFE_RANGE_ONE = [33, 127]
+        SAFE_RANGE_TWO = [188, 256]
+
         self.byteEncoder = {} # Byte Level -> Unicode
         self.byteDecoder = {} # Unicode -> Byte Level
         regex_pattern = (
@@ -15,14 +17,14 @@ class PreProcessor:
 
         self.regex = regex.compile(regex_pattern)
 
-        for i in range(33, 127):
+        for i in range(SAFE_RANGE_ONE[0], SAFE_RANGE_ONE[1]):
             safeIndices.add(i)
 
-        for i in range(188, 256):
+        for i in range(SAFE_RANGE_TWO[0], SAFE_RANGE_TWO[1]):
             safeIndices.add(i)
 
-        shiftCounter = 256
-        for i in range(256):
+        shiftCounter = SAFE_RANGE_TWO[1]
+        for i in range(SAFE_RANGE_TWO[1]):
             if i in safeIndices:
                 self.byteEncoder[i] = chr(i)
 
@@ -52,13 +54,13 @@ class PreProcessor:
             res.append(self.byteDecoder[c])
 
         return res
-    
-    def _byteToUnicode (self, byteRepresentation: list[int]) -> list[str]:
+
+    def _utf8ToSafeUnicode (self, byteRepresentation: list[int]) -> list[str]:
         """
-        Gives a Unicode representation of the given byte level encoding
+        Gives a Safe Unicode representation of the given UTF-8 encoding
 
         Parameters:
-        word: Byte level encoding to be converted to Unicode 
+        word: UTF-8 level encoding to be converted to Safe Unicode characters 
 
         Return:
         Unicode representation 
@@ -90,10 +92,12 @@ class PreProcessor:
         words = self.regex.findall(text)
         res = []
         for word in words:
-            byteLevel = self._unicodeToByte(word)
-            res.append(self._byteToUnicode(byteLevel))
+            utf8 = word.encode("utf-8")
+            res.append(self._utf8ToSafeUnicode(utf8))
 
         return res
 
+
+# Raw Text -> UTF-8 -> Safe UnicodeSymbols -> BPE UTF-8 allows you to encode any language
 
         

@@ -1,5 +1,5 @@
 from collections import Counter
-from utils import mergePair
+from tokeniser.tokeniserutils import mergePair
 from typing import Iterable
 
 
@@ -12,7 +12,7 @@ class Trainer:
 
         for wordList in symbolStream:
             for wordSymbols in wordList:
-                symbols = tuple(wordSymbols) + ("/<w>")
+                symbols = tuple(wordSymbols) + ("/<w>", )
 
                 self.vocab[symbols] += 1
                 self.tokens.update(symbols)
@@ -43,6 +43,8 @@ class Trainer:
                 symbols = word 
                 for j in range(len(symbols) - 1):
                     pair = (symbols[j], symbols[j+1])
+                    if "/<w>" in pair:
+                        continue
                     pairCounts[pair] += freq 
 
             if not pairCounts:

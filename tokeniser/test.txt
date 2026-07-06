@@ -1,0 +1,11 @@
+Hello world.
+Hello, hello again!
+This is a small tokenizer test.
+
+Numbers: 123 456 123.
+Punctuation: don't, won't, I'm, you're.
+Whitespace matters: hello world and  hello  world.
+
+Unicode: café naïve résumé.
+Emoji: hello 🙂 🚀.
+Mixed: The price is £12.50 in London.
