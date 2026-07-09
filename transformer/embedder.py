@@ -18,14 +18,21 @@ class Embedder(torch.nn.Module):
         Inputs: list of tokens in their integer encoding 
 
         Returns:
-        Tensor (len(inputs), maxLength, dModel)
+        maskTensor (len(inputs), maxLength, (1))
+
+        embeddings (len(inputs), maxLength, dModel)
         """
         copies = [row[:] for row in inputs]
-        maxLength = len(max(input, key=len))
+        maxLength = len(max(inputs, key=len))
 
         for copy in copies:
             while len(copy) < maxLength:
                 copy.append(self.vocabSize)
 
+
+        copyTensor = torch.tensor(copies)
+        maskTensor = copyTensor == self.vocabSize
+
+
             
-        return self.embedding(torch.tensor(copy))
+        return maskTensor, self.embedding(torch.tensor(copies))
