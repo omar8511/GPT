@@ -7,7 +7,7 @@ class MultiHeadAttention(torch.nn.Module):
         super().__init__()
         self.dModel = 512
         self.numHeads = 8
-        self.maskTensor = self.maskTensor
+        self.maskTensor = maskTensor
 
         self.wQuery = torch.nn.Linear(self.dModel, self.dModel, bias=False)
         self.wKey = torch.nn.Linear(self.dModel, self.dModel, bias=False)
@@ -18,14 +18,15 @@ class MultiHeadAttention(torch.nn.Module):
 
     def forward(self, x: torch.Tensor):
         Q, K, V = x @ self.wQuery, x @ self.wKey, x @ self.wValue
+        (batch, maxLen, _) = x.shape()
 
         # batch, maxlen, dModel
-        dK = self.dModel / self.numHeads
+        dK = self.dModel // self.numHeads
 
 
-        torch.reshape(Q, (batch, maxLen, self.numHeads, self.dModel))
-        torch.reshape(K, (batch, maxLen, self.numHeads, self.dModel))
-        torch.reshape(V, (batch, maxLen, self.numHeads, self.dModel))
+        Q = torch.reshape(Q, (batch, maxLen, self.numHeads, dK))
+        K = torch.reshape(K, (batch, maxLen, self.numHeads, dK))
+        V = torch.reshape(V, (batch, maxLen, self.numHeads, dK))
         # Batch each row of each matrix into a numHeads x dK matrix 
 
         Q = torch.transpose(Q, 1, 2) 
@@ -43,12 +44,12 @@ class MultiHeadAttention(torch.nn.Module):
         K = torch.transpose(K, 2, 3) 
         # K is batch, numHeads, dK, maxLen
 
-        self.maskTensor = torch.reshape(self.maskTensor, (batch, 1, 1, maxLen))
+        mask = torch.reshape(self.maskTensor, (batch, 1, 1, maxLen))
         A = Q @ K
         AScaled = A / math.sqrt(dK)
         # A is batch, numHeads, maxLen, maxLen, scaled dot product
 
-        AMasked = torch.masked_fill(AScaled, self.maskTensor, -math.inf)
+        AMasked = torch.masked_fill(AScaled, mask, -math.inf)
 
         weights = torch.softmax(AMasked, dim=-1)
 
@@ -57,6 +58,9 @@ class MultiHeadAttention(torch.nn.Module):
         weightedSum = weights @ V
         # (batch, numHeads, maxLen, dK)
 
-        weightedSum = weightedSum.transpose(2, 3)
+        weightedSum = weightedSum.transpose(1, 2)
+        # (batch, maxLen, numHeads, dK)
+
+        weightedSum = torch.reshape(weightedSum, (batch, maxLen, self.dModel))
 
         
