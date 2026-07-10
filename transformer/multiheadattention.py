@@ -12,13 +12,23 @@ class MultiHeadAttention(torch.nn.Module):
         self.wQuery = torch.nn.Linear(self.dModel, self.dModel, bias=False)
         self.wKey = torch.nn.Linear(self.dModel, self.dModel, bias=False)
         self.wValue = torch.nn.Linear(self.dModel, self.dModel, bias=False)
+        self.wOut = torch.nn.Linear(self.dModel, self.dModel, bias=False)
 
         # Input shape is batch, maxLen, dModel so we multiply rows and get 1 * dModel
         
 
     def forward(self, x: torch.Tensor):
+        """
+        Performs the Multi Head Attention's steps
+
+        Args:
+        x - Tensor of shape (batch, maxLen(acrossBatch), dModel)
+
+        Returns:
+        output - Tensor of shape (batch, maxLen(acrossBatch), dModel)
+        """
         Q, K, V = x @ self.wQuery, x @ self.wKey, x @ self.wValue
-        (batch, maxLen, _) = x.shape()
+        (batch, maxLen, _) = x.shape
 
         # batch, maxlen, dModel
         dK = self.dModel // self.numHeads
@@ -35,12 +45,6 @@ class MultiHeadAttention(torch.nn.Module):
         # batch, numHeads, maxLen, dK
 
 
-        #
-        #yes that makes sense and so now we do transposing what exactly happens there cuz it doenst sit in my head that the size of the list of matrices      
-        #becomes its dimension and the dim becomes the size of the list is it that you group each row together into a new matrix basically and thats what     
-        #swaps the dims   
-
-
         K = torch.transpose(K, 2, 3) 
         # K is batch, numHeads, dK, maxLen
 
@@ -52,7 +56,6 @@ class MultiHeadAttention(torch.nn.Module):
         AMasked = torch.masked_fill(AScaled, mask, -math.inf)
 
         weights = torch.softmax(AMasked, dim=-1)
-
         # Each Row sums to one
 
         weightedSum = weights @ V
@@ -63,4 +66,8 @@ class MultiHeadAttention(torch.nn.Module):
 
         weightedSum = torch.reshape(weightedSum, (batch, maxLen, self.dModel))
 
-        
+        output = self.wOut(weightedSum)
+
+        # (batch, maxLen, dModel)
+        return output
+
