@@ -1,4 +1,5 @@
 import torch
+from transformer.positionalembedder import PositionalEmbedder
 
 class Embedder(torch.nn.Module):
 
@@ -6,6 +7,8 @@ class Embedder(torch.nn.Module):
         super().__init__()
         self.dModel = 512
         self.vocabSize = vocabSize
+        self.positionalEncoder = PositionalEmbedder(256, self.dModel)
+
         self.embedding = torch.nn.Embedding(vocabSize + 1, self.dModel, padding_idx=vocabSize) # Matrix init to vocabSize x dModel 
         
 
@@ -23,16 +26,18 @@ class Embedder(torch.nn.Module):
         embeddings (len(inputs), maxLength, dModel)
         """
         copies = [row[:] for row in inputs]
-        maxLength = len(max(inputs, key=len))
+        maxSeqLen = len(max(inputs, key=len))
 
         for copy in copies:
-            while len(copy) < maxLength:
+            while len(copy) < maxSeqLen:
                 copy.append(self.vocabSize)
 
 
         copyTensor = torch.tensor(copies)
         maskTensor = copyTensor == self.vocabSize
+        tokenEmbeddings = self.embedding(copyTensor)
+        positionEmbeddings = self.positionalEncoder(maxSeqLen)
 
 
-            
-        return maskTensor, self.embedding(torch.tensor(copies))
+        # broadcasts over so each maxLength block gets the same positional encodings which makes sense
+        return maskTensor, (tokenEmbeddings + positionEmbeddings)
