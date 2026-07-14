@@ -16,7 +16,7 @@ class Residuals(torch.nn.Module):
 
         Args:
         x - tensor of shape (..., dModel)
-        subLayer - subLayer to this residual
+        subLayer (torch.Tensor -> torch.Tensor) - subLayer to this residual
 
         Returns
         output - tensor of shape (..., dModel)

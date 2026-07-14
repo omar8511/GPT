@@ -3,11 +3,10 @@ import math
 
 class MultiHeadAttention(torch.nn.Module):
 
-    def __init__(self, maskTensor: torch.Tensor):
+    def __init__(self):
         super().__init__()
         self.dModel = 512
         self.numHeads = 8
-        self.maskTensor = maskTensor
 
         self.wQuery = torch.nn.Linear(self.dModel, self.dModel, bias=False)
         self.wKey = torch.nn.Linear(self.dModel, self.dModel, bias=False)
@@ -17,7 +16,7 @@ class MultiHeadAttention(torch.nn.Module):
         # Input shape is batch, maxLen, dModel so we multiply rows and get 1 * dModel
         
 
-    def forward(self, x: torch.Tensor):
+    def forward(self, x: torch.Tensor, maskTensor: torch.Tensor):
         """
         Performs the Multi Head Attention's steps
 
@@ -27,8 +26,9 @@ class MultiHeadAttention(torch.nn.Module):
         Returns:
         output - Tensor of shape (batch, maxLen(acrossBatch), dModel)
         """
-        Q, K, V = x @ self.wQuery, x @ self.wKey, x @ self.wValue
+        Q, K, V = self.wQuery(x), self.wKey(x), self.wValue(x)
         (batch, maxLen, _) = x.shape
+        causalMask = torch.triu(torch.ones(maxLen, maxLen, dtype=torch.bool), diagonal=1)
 
         # batch, maxlen, dModel
         dK = self.dModel // self.numHeads
@@ -48,7 +48,7 @@ class MultiHeadAttention(torch.nn.Module):
         K = torch.transpose(K, 2, 3) 
         # K is batch, numHeads, dK, maxLen
 
-        mask = torch.reshape(self.maskTensor, (batch, 1, 1, maxLen))
+        mask = torch.reshape(maskTensor, (batch, 1, 1, maxLen)) | causalMask
         A = Q @ K
         AScaled = A / math.sqrt(dK)
         # A is batch, numHeads, maxLen, maxLen, scaled dot product
