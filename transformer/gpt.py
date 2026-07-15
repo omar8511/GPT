@@ -1,0 +1,31 @@
+import torch
+from transformer.embedder import Embedder
+from transformer.decoder import Decoder
+from transformer.layernorm import LayerNorm
+
+class GPT(torch.nn.Module):
+
+    def __init__(self, dModel: int, vocabSize: int) -> None:
+        super().__init__()
+        self.embedder = Embedder(vocabSize)
+        self.decoder = Decoder()
+        self.LN = LayerNorm()
+        self.LM = torch.nn.Linear(dModel, vocabSize)
+        self.LM.weight = self.embedder.embedding.weight
+
+    def forward(self, inputs: list[list[int]]):
+        """
+        Returns the model output given a list of words as their integer encodings from BPE
+
+        Args:
+        Inputs - List of words as integer encodings from BPE
+
+        Returns:
+        result - Tensor of size (batch, maxSeqLen, vocabSize) 
+        """
+        mask, embeddings = self.embedder(inputs)
+        decodings = self.decoder(embeddings, mask)
+        output = self.LN(decodings)
+        result = self.LM(output)
+        return result
+    
