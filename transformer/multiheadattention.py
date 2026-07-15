@@ -22,6 +22,7 @@ class MultiHeadAttention(torch.nn.Module):
 
         Args:
         x - Tensor of shape (batch, maxLen(acrossBatch), dModel)
+        mask - (batch, maxLen), True at positions that are padding and false at real tokens
 
         Returns:
         output - Tensor of shape (batch, maxLen(acrossBatch), dModel)

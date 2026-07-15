@@ -13,7 +13,7 @@ class Embedder(torch.nn.Module):
         
 
     # when you do module(...) it implicitly calls forward for a tensor allows us to do self.embedder(input)
-    def forward(self, inputs: list[list[int]]) -> torch.Tensor:
+    def forward(self, inputs: list[list[int]]) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Maps each token id to its learned embedding vector, padding sequences to equal length before lookup.
 
