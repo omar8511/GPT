@@ -1,5 +1,7 @@
 from tokeniser.preprocessor import PreProcessor
+from tokeniser.bpe import BPE
 from typing import Iterator
+
 
 def mergePair(symbols: tuple[str], pair: tuple[str, str]):
         """
@@ -63,3 +65,41 @@ def buildTrainingSequences(wordTokenLists: list[list[int]], maxLen: int) -> list
       return [flat[i:i+maxLen] for i in range(0, len(flat), maxLen)]
 
     
+def streamTrainingSequences(filePath: str, preprocessor: PreProcessor, bpe: BPE, maxLen: int) -> Iterator[list[int]]:
+    """
+    Streams training-ready token sequences from a file, one chunk at a time
+
+    Args:
+    filePath: Path to the file containing raw text
+    preprocessor: Instance of the preprocessor
+    bpe: Instance of BPE with merges/tokens already learned
+    maxLen: Maximum length of each yielded sequence
+
+    Returns:
+    Iterator over token id sequences, each of length at most maxLen and greater than 1
+    """
+    for lineSymbols in streamFileSymbols(filePath, preprocessor):
+        wordTokenLists = bpe.encode(lineSymbols)
+        for chunk in buildTrainingSequences(wordTokenLists, maxLen):
+            if len(chunk) > 1:
+                yield chunk
+
+def batchSequences(sequenceStream: Iterator[list[int]], batchSize: int) -> Iterator[list[list[int]]]:
+    """
+    Groups a stream of token sequences into batches
+
+    Args:
+    sequenceStream: Iterator over individual token id sequences
+    batchSize: Number of sequences per batch
+
+    Returns:
+    Iterator over batches, each a list of up to batchSize sequences
+    """
+    batch = []
+    for sequence in sequenceStream:
+        batch.append(sequence)
+        if len(batch) == batchSize:
+            yield batch
+            batch = []
+    if batch:
+        yield batch
