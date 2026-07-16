@@ -47,5 +47,19 @@ def streamFileSymbols(filePath: str, preprocessor: PreProcessor) -> Iterator[lis
                 yield preprocessor.tokenise(line)
              
 
+def buildTrainingSequences(wordTokenLists: list[list[int]], maxLen: int) -> list[list[int]]:
+      """
+      Flatten BPE word level encodings into maxLen chunks
+
+      Args:
+      wordTokenLists - BPE word level encodings
+      maxLen - length of each chunk
+
+      Returns
+      List of tokens each as maxLen chunks not per word
+      
+      """
+      flat = [tokenId for word in wordTokenLists for tokenId in word]
+      return [flat[i:i+maxLen] for i in range(0, len(flat), maxLen)]
 
     
