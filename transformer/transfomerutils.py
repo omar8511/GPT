@@ -5,7 +5,7 @@ def buildTrainingPairs(sequences: list[list[int]]) -> tuple[list[list[int]], lis
     Builds shift by one pairs for training
 
     Args:
-    sequences: list of words encoded by BPE
+    sequences: text encoded by BPE
 
     Returns:
     inputSeqs - list of words encoded by BPE dropping the last entry
