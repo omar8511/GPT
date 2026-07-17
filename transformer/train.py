@@ -32,10 +32,10 @@ def train() -> None:
             for t in target:
                 while len(t) < maxLen:
                     t.append(vocabSize)
-            targetTensor = torch.Tensor(target)
+            targetTensor = torch.tensor(target)
 
             logits = gpt(input)
-            loss = torch.F.cross_entropy(logits.reshape(-1, vocabSize), targetTensor.reshape(-1), ignore_index=vocabSize)
+            loss = torch.nn.functional.cross_entropy(logits.reshape(-1, vocabSize), targetTensor.reshape(-1), ignore_index=vocabSize)
             optimiser.zero_grad()
             loss.backward()
             optimiser.step()
