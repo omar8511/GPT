@@ -1,11 +1,13 @@
 import torch
+from transformer.config import Config
+
 
 class PositionalEmbedder(torch.nn.Module):
 
-    def __init__(self, maxLen: int, dModel: int) -> None:
+    def __init__(self, config: Config) -> None:
         super().__init__()
 
-        self.positionalEmbeddings = torch.nn.Embedding(maxLen, dModel)
+        self.positionalEmbeddings = torch.nn.Embedding(config.maxLen, config.dModel)
 
     def forward(self, seqLength: int) -> torch.Tensor:
         """

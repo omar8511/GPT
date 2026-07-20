@@ -1,12 +1,14 @@
 import torch 
 import math
+from transformer.config import Config
+
 
 class MultiHeadAttention(torch.nn.Module):
 
-    def __init__(self):
+    def __init__(self, config: Config):
         super().__init__()
-        self.dModel = 512
-        self.numHeads = 8
+        self.dModel = config.dModel
+        self.numHeads = config.numHeads
 
         self.wQuery = torch.nn.Linear(self.dModel, self.dModel, bias=False)
         self.wKey = torch.nn.Linear(self.dModel, self.dModel, bias=False)

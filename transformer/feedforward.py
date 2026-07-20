@@ -1,12 +1,13 @@
 import torch 
+from transformer.config import Config
 
 
 class FeedForward(torch.nn.Module):
 
-    def __init__(self) -> None:
+    def __init__(self, config: Config) -> None:
         super().__init__()
-        self.dModel = 512
-        self.dFF = 2048
+        self.dModel = config.dModel
+        self.dFF = config.dFF
         self.linearOne = torch.nn.Linear(self.dModel, self.dFF)
         self.linearTwo = torch.nn.Linear(self.dFF, self.dModel)
         self.GELU = torch.nn.GELU()

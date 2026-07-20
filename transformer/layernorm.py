@@ -1,10 +1,12 @@
 import torch
+from transformer.config import Config
+
 
 class LayerNorm(torch.nn.Module):
 
-    def __init__(self) -> None:
+    def __init__(self, config: Config) -> None:
         super().__init__()
-        self.dModel = 512
+        self.dModel = config.dModel
         self.gamma = torch.nn.Parameter(torch.ones((self.dModel)))
         self.beta = torch.nn.Parameter(torch.zeros((self.dModel)))
     

@@ -1,9 +1,11 @@
 import torch 
 from transformer.gpt import GPT
 from tokeniser.tokeniser import Tokeniser
+from transformer.config import Config
 
 
-def sampleNextToken(nextTokenLogits: torch.Tensor, temperature: float, k: int) -> str:
+
+def sampleNextToken(nextTokenLogits: torch.Tensor, config: Config) -> str:
     """
     Samples the next token id from logits using temperature and top-k sampling
 
@@ -16,13 +18,13 @@ def sampleNextToken(nextTokenLogits: torch.Tensor, temperature: float, k: int) -
     nextToken: Sampled token id, as a plain int
     """
 
-    scaledLogits = nextTokenLogits / temperature
-    topValues, topIndices = torch.topk(scaledLogits, k)
+    scaledLogits = nextTokenLogits / config.temperature
+    topValues, topIndices = torch.topk(scaledLogits, config.k)
     probs = torch.softmax(topValues, dim=-1)
     sampledIndex = torch.multinomial(probs, num_samples=1)
     return topIndices[sampledIndex].item()
 
-def generate(gpt: GPT, tokeniser: Tokeniser, prompt: str, maxNewTokens: int, maxLen: int = 256, temperature: float = 1.0, k: int = 10) -> str:
+def generate(gpt: GPT, tokeniser: Tokeniser, prompt: str, maxNewTokens: int, config: Config) -> str:
     """
     Generates text by autoregressively sampling new tokens from the model given a prompt
 
@@ -43,10 +45,10 @@ def generate(gpt: GPT, tokeniser: Tokeniser, prompt: str, maxNewTokens: int, max
 
     with torch.no_grad():
         for _ in range(maxNewTokens):
-            windowed = sequence[-maxLen:]
+            windowed = sequence[-config.maxLen:]
             logits = gpt([windowed])
             nextTokenLogits = logits[0, -1, :]
-            nextToken = sampleNextToken(nextTokenLogits, temperature, k)
+            nextToken = sampleNextToken(nextTokenLogits, config.temperature, config.k)
             sequence.append(nextToken)
 
     eowId = tokeniser.bpe.vocabMapping["/<w>"]
