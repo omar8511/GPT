@@ -2,14 +2,15 @@ import torch
 from transformer.multiheadattention import MultiHeadAttention
 from transformer.feedforward import FeedForward
 from transformer.residuals import Residuals
+from transformer.config import Config
 
 class TransformerBlock(torch.nn.Module):
 
-    def __init__(self) -> None:
+    def __init__(self, config: Config) -> None:
         super().__init__()
-        self.residualsOne, self.residualsTwo = Residuals(), Residuals()
-        self.attention = MultiHeadAttention()
-        self.feedForward = FeedForward()
+        self.residualsOne, self.residualsTwo = Residuals(config), Residuals(config)
+        self.attention = MultiHeadAttention(config)
+        self.feedForward = FeedForward(config)
 
 
     def forward(self, x: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
