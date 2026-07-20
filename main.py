@@ -1,7 +1,7 @@
 from transformer.generate import generate
 from transformer.train import train
 from transformer.config import Config
-from transformer.checkpoint import Checkpoint
+from transformer.checkpoint import loadCheckpoint
 import argparse
 import os
 
@@ -16,7 +16,7 @@ def main():
 
     
     if os.path.exists(args.checkpoint):
-      gpt, tokeniser, config = Checkpoint.loadCheckpoint(args.checkpoint)
+      gpt, tokeniser, config = loadCheckpoint(args.checkpoint)
     else:
       config = Config()
       gpt, tokeniser = train(args.trainFile, config, args.checkpoint)

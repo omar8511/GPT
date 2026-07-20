@@ -6,13 +6,13 @@ from transformer.gpt import GPT
 from transformer.transfomerutils import buildTrainingPairs
 from tokeniser.tokeniser import Tokeniser
 from transformer.config import Config
-from transformer.checkpoint import Checkpoint
+from transformer.checkpoint import saveCheckpoint
 
 
 import torch
 
 
-def train(filePath: str, config: Config) -> tuple[GPT, Tokeniser]:
+def train(filePath: str, config: Config, trainingPath: str) -> tuple[GPT, Tokeniser]:
 
     preprocesser = PreProcessor()
     stream = streamFileSymbols(filePath, preprocesser)
@@ -44,7 +44,7 @@ def train(filePath: str, config: Config) -> tuple[GPT, Tokeniser]:
             optimiser.step()
 
     tokeniser = Tokeniser(preprocesser, bpe)
-    Checkpoint.saveCheckpoint(GPT, config, merges, tokens, "checkpoint.pt")
+    saveCheckpoint(gpt, config, merges, tokens, trainingPath)
 
 
     return gpt, tokeniser
