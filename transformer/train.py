@@ -4,28 +4,29 @@ from tokeniser.trainer import Trainer
 from tokeniser.tokeniserutils import streamFileSymbols, streamTrainingSequences, batchSequences
 from transformer.gpt import GPT
 from transformer.transfomerutils import buildTrainingPairs
+from tokeniser.tokeniser import Tokeniser
 
 import torch
 
 
-def train() -> None:
+def train(filePath: str) -> tuple[GPT, Tokeniser]:
 
     preprocesser = PreProcessor()
-    stream = streamFileSymbols("tokeniser/test.txt", preprocesser)
+    stream = streamFileSymbols(filePath, preprocesser)
     trainer = Trainer(stream)
-    merges, tokens = trainer.train_BPE(25)
+    merges, tokens = trainer.train_BPE(500)
     tokens.update(preprocesser.byteEncoder.values())
     bpe = BPE(merges, tokens)
     vocabSize = len(tokens)
     
 
-    gpt = GPT(512, vocabSize)
+    gpt = GPT(vocabSize)
     
     optimiser = torch.optim.AdamW(gpt.parameters())
     numEpochs = 25
 
     for _ in range(numEpochs):
-        trainingStream = streamTrainingSequences("traintext", preprocesser, bpe, 256)
+        trainingStream = streamTrainingSequences(filePath, preprocesser, bpe, 256)
         for batch in batchSequences(trainingStream, 25):
             input, target = buildTrainingPairs(batch)
             maxLen = len(max(input, key=len))
@@ -40,9 +41,8 @@ def train() -> None:
             loss.backward()
             optimiser.step()
 
+    tokeniser = Tokeniser(preprocesser, bpe)
 
 
-
-    filePath = ""
-
+    return gpt, tokeniser
 

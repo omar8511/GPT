@@ -5,13 +5,13 @@ from transformer.layernorm import LayerNorm
 
 class GPT(torch.nn.Module):
 
-    def __init__(self, dModel: int, vocabSize: int) -> None:
+    def __init__(self, vocabSize: int) -> None:
         super().__init__()
         self.embedder = Embedder(vocabSize)
         self.decoder = Decoder()
         self.LN = LayerNorm()
-        self.LM = torch.nn.Linear(dModel, vocabSize)
-        self.LM.weight = self.embedder.embedding.weight
+        self.vocabSize = vocabSize
+        self.LMBias = torch.nn.Parameter(torch.zeros(vocabSize))
 
     def forward(self, inputs: list[list[int]]):
         """
@@ -26,6 +26,6 @@ class GPT(torch.nn.Module):
         mask, embeddings = self.embedder(inputs)
         decodings = self.decoder(embeddings, mask)
         output = self.LN(decodings)
-        result = self.LM(output)
+        result = torch.nn.functional.linear(output, self.embedder.embedding.weight[:self.vocabSize], self.LMBias)
         return result
     
