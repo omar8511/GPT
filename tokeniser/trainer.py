@@ -1,15 +1,16 @@
 from collections import Counter
 from tokeniser.tokeniserutils import mergePair
 from typing import Iterable
+from transformer.config import Config
 
 
 class Trainer:
 
 
-    def __init__(self, symbolStream: Iterable[list[list[str]]]) -> None:
+    def __init__(self, symbolStream: Iterable[list[list[str]]], config: Config) -> None:
         self.vocab = Counter()
         self.tokens = set()
-
+        self.numMerges = config.numMerges
         for wordList in symbolStream:
             for wordSymbols in wordList:
                 symbols = tuple(wordSymbols) + ("/<w>", )
@@ -19,7 +20,7 @@ class Trainer:
 
 
 
-    def train_BPE(self, numMerges: int) -> tuple[list[tuple[str, str]], set[str]]:
+    def train_BPE(self) -> tuple[list[tuple[str, str]], set[str]]:
         """
         Perform numMerges iterations of BPE 
 
@@ -35,7 +36,7 @@ class Trainer:
 
         merges = []
 
-        for _ in range(numMerges):
+        for _ in range(self.numMerges):
             
             pairCounts = Counter()
 

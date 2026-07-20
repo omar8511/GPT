@@ -1,7 +1,6 @@
-from tokeniser.tokeniser import Tokeniser
-from transformer.gpt import GPT
 from transformer.generate import generate
 from transformer.train import train
+from transformer.config import Config
 import argparse
 
 def main():
@@ -11,8 +10,9 @@ def main():
     parser.add_argument("--maxTokens", type=int, default=50)
     args = parser.parse_args()
 
-    gpt, tokeniser = train(args.trainFile)
-    print(generate(gpt, tokeniser, args.prompt, args.maxTokens))
+    config = Config()
+    gpt, tokeniser = train(args.trainFile, config)
+    print(generate(gpt, tokeniser, args.prompt, args.maxTokens, config))
     
 
 main()

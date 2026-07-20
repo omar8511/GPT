@@ -1,13 +1,13 @@
 import torch
-
+from transformer.config import Config
 from transformer.transformerblock import TransformerBlock
 
 class Decoder(torch.nn.Module):
 
-    def __init__(self) -> None:
+    def __init__(self, config: Config) -> None:
         super().__init__()
-        self.N = 4 
-        self.blocks = torch.nn.ModuleList([TransformerBlock() for _ in range(self.N)])
+        self.N = config.N
+        self.blocks = torch.nn.ModuleList([TransformerBlock(config) for _ in range(self.N)])
 
 
     def forward(self, x: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:

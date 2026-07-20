@@ -1,4 +1,3 @@
-import torch
 
 def buildTrainingPairs(sequences: list[list[int]]) -> tuple[list[list[int]], list[list[int]]]:
     """

@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+@dataclass
 class Config:
     dModel: int = 512
     dFF: int = 2048

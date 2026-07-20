@@ -1,15 +1,16 @@
 import torch
 from transformer.positionalembedder import PositionalEmbedder
+from transformer.config import Config
 
 class Embedder(torch.nn.Module):
 
-    def __init__(self, vocabSize: int) -> None:
+    def __init__(self, config: Config) -> None:
         super().__init__()
-        self.dModel = 512
-        self.vocabSize = vocabSize
-        self.positionalEncoder = PositionalEmbedder(256, self.dModel)
+        self.dModel = config.dModel
+        self.vocabSize = config.vocabSize
+        self.positionalEncoder = PositionalEmbedder(config)
 
-        self.embedding = torch.nn.Embedding(vocabSize + 1, self.dModel, padding_idx=vocabSize) # Matrix init to vocabSize x dModel 
+        self.embedding = torch.nn.Embedding(self.vocabSize + 1, self.dModel, padding_idx=self.vocabSize) # Matrix init to vocabSize x dModel 
         
 
     # when you do module(...) it implicitly calls forward for a tensor allows us to do self.embedder(input)

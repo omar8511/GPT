@@ -1,14 +1,16 @@
 import torch
 from transformer.layernorm import LayerNorm
 from typing import Callable
+from transformer.config import Config
+
 
 
 
 class Residuals(torch.nn.Module):
 
-    def __init__(self):
+    def __init__(self, config: Config):
         super().__init__()
-        self.layerNorm = LayerNorm()
+        self.layerNorm = LayerNorm(config)
 
 
     def forward(self, x: torch.Tensor, subLayer: Callable[[torch.Tensor], torch.Tensor]) -> torch.Tensor:

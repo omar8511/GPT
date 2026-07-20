@@ -48,7 +48,7 @@ def generate(gpt: GPT, tokeniser: Tokeniser, prompt: str, maxNewTokens: int, con
             windowed = sequence[-config.maxLen:]
             logits = gpt([windowed])
             nextTokenLogits = logits[0, -1, :]
-            nextToken = sampleNextToken(nextTokenLogits, config.temperature, config.k)
+            nextToken = sampleNextToken(nextTokenLogits, config)
             sequence.append(nextToken)
 
     eowId = tokeniser.bpe.vocabMapping["/<w>"]

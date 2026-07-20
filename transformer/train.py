@@ -15,14 +15,13 @@ def train(filePath: str, config: Config) -> tuple[GPT, Tokeniser]:
 
     preprocesser = PreProcessor()
     stream = streamFileSymbols(filePath, preprocesser)
-    trainer = Trainer(stream)
-    merges, tokens = trainer.train_BPE(config.numMerges)
+    trainer = Trainer(stream, config)
+    merges, tokens = trainer.train_BPE()
     tokens.update(preprocesser.byteEncoder.values())
     bpe = BPE(merges, tokens)
-    vocabSize = len(tokens)
-    
+    config.vocabSize = len(tokens)    
 
-    gpt = GPT(vocabSize)
+    gpt = GPT(config)
     
     optimiser = torch.optim.AdamW(gpt.parameters())
 
@@ -33,11 +32,11 @@ def train(filePath: str, config: Config) -> tuple[GPT, Tokeniser]:
             maxLen = len(max(input, key=len))
             for t in target:
                 while len(t) < maxLen:
-                    t.append(vocabSize)
+                    t.append(config.vocabSize)
             targetTensor = torch.tensor(target)
 
             logits = gpt(input)
-            loss = torch.nn.functional.cross_entropy(logits.reshape(-1, vocabSize), targetTensor.reshape(-1), ignore_index=vocabSize)
+            loss = torch.nn.functional.cross_entropy(logits.reshape(-1, config.vocabSize), targetTensor.reshape(-1), ignore_index=config.vocabSize)
             print(loss.item())
             optimiser.zero_grad()
             loss.backward()

@@ -1,17 +1,18 @@
 import torch
 from transformer.embedder import Embedder
 from transformer.decoder import Decoder
+from transformer.config import Config
 from transformer.layernorm import LayerNorm
 
 class GPT(torch.nn.Module):
 
-    def __init__(self, vocabSize: int) -> None:
+    def __init__(self, config: Config) -> None:
         super().__init__()
-        self.embedder = Embedder(vocabSize)
-        self.decoder = Decoder()
-        self.LN = LayerNorm()
-        self.vocabSize = vocabSize
-        self.LMBias = torch.nn.Parameter(torch.zeros(vocabSize))
+        self.vocabSize = config.vocabSize
+        self.embedder = Embedder(config)
+        self.decoder = Decoder(config)
+        self.LN = LayerNorm(config)
+        self.LMBias = torch.nn.Parameter(torch.zeros(self.vocabSize))
 
     def forward(self, inputs: list[list[int]]):
         """
