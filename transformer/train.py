@@ -7,6 +7,7 @@ from transformer.transfomerutils import buildTrainingPairs
 from tokeniser.tokeniser import Tokeniser
 from transformer.config import Config
 from transformer.checkpoint import saveCheckpoint
+from traininglogger.logger import Logger
 
 
 import torch
@@ -21,12 +22,14 @@ def train(filePath: str, config: Config, trainingPath: str) -> tuple[GPT, Tokeni
     tokens.update(preprocesser.byteEncoder.values())
     bpe = BPE(merges, tokens)
     config.vocabSize = len(tokens)    
+    logger = Logger(config)
 
     gpt = GPT(config)
     
     optimiser = torch.optim.AdamW(gpt.parameters())
 
-    for _ in range(config.numEpochs):
+    step = 0
+    for i in range(config.numEpochs):
         trainingStream = streamTrainingSequences(filePath, preprocesser, bpe, config.maxLen)
         for batch in batchSequences(trainingStream, config.batchSize):
             input, target = buildTrainingPairs(batch)
@@ -38,10 +41,11 @@ def train(filePath: str, config: Config, trainingPath: str) -> tuple[GPT, Tokeni
 
             logits = gpt(input)
             loss = torch.nn.functional.cross_entropy(logits.reshape(-1, config.vocabSize), targetTensor.reshape(-1), ignore_index=config.vocabSize)
-            print(loss.item())
             optimiser.zero_grad()
             loss.backward()
             optimiser.step()
+            logger.appendLoss(i, step, loss.item())
+            step += 1
 
     tokeniser = Tokeniser(preprocesser, bpe)
     saveCheckpoint(gpt, config, merges, tokens, trainingPath)
