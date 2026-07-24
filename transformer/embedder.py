@@ -22,7 +22,7 @@ class Embedder(torch.nn.Module):
         Inputs: list of tokens in their integer encoding 
 
         Returns:
-        maskTensor (len(inputs), maxLength, (1))
+        maskTensor (len(inputs), maxLength)
 
         embeddings (len(inputs), maxLength, dModel)
         """

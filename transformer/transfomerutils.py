@@ -8,7 +8,7 @@ def buildTrainingPairs(sequences: list[list[int]]) -> tuple[list[list[int]], lis
 
     Returns:
     inputSeqs - list of words encoded by BPE dropping the last entry
-    targetSeqs - list of words encoded by BPE dropping the first entr
+    targetSeqs - list of words encoded by BPE dropping the first entry
     
     """
     inputSeqs = [seq[:-1] for seq in sequences]

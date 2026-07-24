@@ -5,14 +5,14 @@ from transformer.config import Config
 
 
 
-def sampleNextToken(nextTokenLogits: torch.Tensor, config: Config) -> str:
+def sampleNextToken(nextTokenLogits: torch.Tensor, config: Config) -> int:
     """
     Samples the next token id from logits using temperature and top-k sampling
 
     Args:
-    nextTokenlogits: Tensor of shape (vocabSize,) - raw logits for the next token
-    temperature: Scaling factor applied to logits before sampling - lower is more deterministic
-    k: Number of highest scoring tokens to sample from
+    nextTokenLogits: Tensor of shape (vocabSize,) - raw logits for the next token
+    config: Config providing temperature (scaling applied before sampling - lower is
+            more deterministic) and k (number of highest scoring tokens to sample from)
 
     Returns:
     nextToken: Sampled token id, as a plain int
@@ -33,9 +33,8 @@ def generate(gpt: GPT, tokeniser: Tokeniser, prompt: str, maxNewTokens: int, con
     tokeniser: Tokeniser used to encode the prompt and decode the generated ids
     prompt: Raw text to continue from
     maxNewTokens: Number of tokens to generate
-    maxLen: Maximum context window fed into the model at each step
-    temperature: Scaling factor applied to logits before sampling - lower is more deterministic
-    k: Number of highest scoring tokens to sample from at each step
+    config: Config providing maxLen (context window fed into the model at each step),
+            temperature and k (used for sampling - see sampleNextToken)
 
     Returns:
     Generated text, including the original prompt

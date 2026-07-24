@@ -22,10 +22,7 @@ class Trainer:
 
     def train_BPE(self) -> tuple[list[tuple[str, str]], set[str]]:
         """
-        Perform numMerges iterations of BPE 
-
-        Params:
-        numMerges: Number of iterations of BPE to perform 
+        Perform numMerges iterations of BPE
 
         Returns:
         merges: List of the pairs that were merged together

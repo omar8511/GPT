@@ -9,7 +9,7 @@ def mergePair(symbols: tuple[str], pair: tuple[str, str]):
 
         Args:
         symbols: Representation of the word as a tuple of its characters
-        pairs: The pair to be merged
+        pair: The pair to be merged
 
         Returns:
         result: Representation of the word with the pairs merged

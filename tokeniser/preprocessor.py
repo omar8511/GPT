@@ -85,7 +85,7 @@ class PreProcessor:
         Returns:
         List of words each represented as a list of symbols eg:
 
-        [["H", "E", "L", "L", "O"], ["B", Y", "E"]]
+        [["H", "E", "L", "L", "O"], ["B", "Y", "E"]]
     
         """
 

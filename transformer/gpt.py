@@ -19,7 +19,7 @@ class GPT(torch.nn.Module):
         Returns the model output given a list of words as their integer encodings from BPE
 
         Args:
-        Inputs - List of words as integer encodings from BPE
+        inputs - List of words as integer encodings from BPE
 
         Returns:
         result - Tensor of size (batch, maxSeqLen, vocabSize) 

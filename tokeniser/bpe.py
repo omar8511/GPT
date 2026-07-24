@@ -12,8 +12,7 @@ class BPE:
         for i, tok in enumerate(tokens):
             self.vocabMapping[tok] = i
             self.integerMapping[i] = tok
-        return
-    
+
     def encode(self, text : list[list[str]]) -> list[list[int]]:
         """
         Returns BPE representation of tokenised text
