@@ -60,6 +60,7 @@ class MultiHeadAttention(torch.nn.Module):
 
         weights = torch.softmax(AMasked, dim=-1)
         # Each Row sums to one
+        self.attentionWeights = weights.detach()
 
         weightedSum = weights @ V
         # (batch, numHeads, maxLen, dK)

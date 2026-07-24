@@ -47,7 +47,16 @@ def train(filePath: str, config: Config, trainingPath: str) -> tuple[GPT, Tokeni
             logger.appendLoss(i, step, loss.item())
             step += 1
 
+    attentions = [block.attention.attentionWeights for block in gpt.decoder.blocks]
+    attentionFirstBatch = attentions[0][0]
+    firstBatch = input[0]
+    realLen = len(firstBatch)
+    trimmedAttentionsFirstBatch = attentionFirstBatch[:, :realLen, :realLen]
+    logger.logAttentions(trimmedAttentionsFirstBatch, firstBatch)
+
     tokeniser = Tokeniser(preprocesser, bpe)
+
+
     saveCheckpoint(gpt, config, merges, tokens, trainingPath)
 
 

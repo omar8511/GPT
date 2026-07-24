@@ -2,6 +2,7 @@ from transformer.config import Config
 import os, json
 from datetime import datetime
 from dataclasses import asdict
+import torch
 
 
 class Logger:
@@ -37,3 +38,19 @@ class Logger:
 
         self.file.write(line + "\n")
         self.file.flush()
+
+    def logAttentions(self, attentions: torch.Tensor, input: list[int]) -> None:
+        """
+        Saves an attention snapshot for a single sentence to its own .pt file.
+
+        Args:
+        attentions: Attention weights, shape (numHeads, realLen, realLen)
+        input: Token ids of the sentence the attention weights were computed for
+        """
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        torch.save(
+        {
+            "attentions": attentions,
+            "input" : input
+        }, f"logs/attentions_{timestamp}.pt"
+    )

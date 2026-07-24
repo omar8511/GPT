@@ -1,8 +1,9 @@
 import os
-import json 
+import json
+import torch
 import matplotlib.pyplot as plt
 
-def visualise(path: str) -> None:
+def visualiseLoss(path: str) -> None:
     """
     Reads a training log and plots the loss curve, with vertical markers at epoch boundaries.
 
@@ -42,4 +43,39 @@ def visualise(path: str) -> None:
         plt.show()
     else:
         raise FileNotFoundError(f"No such log file: {path}")
+
+
+
+def visualiseAttention(path: str) -> None:
+    """
+    Reads a saved attention snapshot and plots one heatmap per head, saved as a single PNG.
+
+    Args:
+    path: Path to the .pt file produced by Logger.logAttentions, containing
+          "attentions" (numHeads, realLen, realLen) and "input" (token ids)
+    """
+    if not os.path.isfile(path):
+        raise FileNotFoundError(f"No such attention file: {path}")
+
+    data = torch.load(path)
+    attentions = data["attentions"]
+    tokens = data["input"]
+    numHeads = attentions.shape[0]
+
+    fig, axes = plt.subplots(1, numHeads, figsize=(4 * numHeads, 4))
+    if numHeads == 1:
+        axes = [axes]
+
+    for headIdx in range(numHeads):
+        ax = axes[headIdx]
+        ax.imshow(attentions[headIdx].numpy())
+        ax.set_xticks(range(len(tokens)))
+        ax.set_yticks(range(len(tokens)))
+        ax.set_xticklabels(tokens, rotation=90, fontsize=6)
+        ax.set_yticklabels(tokens, fontsize=6)
+        ax.set_title(f"head {headIdx}")
+
+    fig.tight_layout()
+    fig.savefig("attention_heatmap.png")
+    plt.show()
 

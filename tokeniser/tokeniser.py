@@ -15,10 +15,12 @@ class Tokeniser:
               text: Raw input string.
 
           Returns:
-              Token ids grouped by pre-tokenised text chunk.
+              Token ids grouped by maxLen chunks
           """
           symbols = self.preProcessor.tokenise(text)
-          return self.bpe.encode(symbols)
+          bpeEncodings = self.bpe.encode(symbols)
+          return bpeEncodings
+          
 
       def decode(self, tokenIds: list[list[int]]) -> str:
           """
