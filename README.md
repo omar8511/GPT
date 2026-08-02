@@ -1,6 +1,6 @@
 # mini-gpt
 
-A GPT implementation built from scratch in Python/PyTorch: byte-level BPE tokeniser and a decoder-only transformer, both written by hand rather than pulled from a library. The point of this project is to actually understand how the pieces work, not to produce a model that's good at anything - the training corpus in `tokeniser/test.txt` is tiny, so don't expect coherent output.
+A GPT implementation built from scratch in Python/PyTorch: byte-level BPE tokeniser and a decoder-only transformer, both written by hand rather than pulled from a library.
 
 ## Setup
 
@@ -56,7 +56,5 @@ There's also an attention snapshot taken at the end of training (`logs/attention
 ![Attention heatmap](docs/attention_heatmap.png)
 
 ## Known limitations
-
-- The tokeniser and model are retrained from scratch every run unless a checkpoint is passed in - there's no incremental training.
 - No learning rate scheduling, gradient clipping, or validation split - it's a minimal training loop, not a tuned one.
 - Generation quality is bottlenecked entirely by the toy training corpus, not by the architecture.
