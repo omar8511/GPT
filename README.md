@@ -19,9 +19,11 @@ python main.py "<prompt>" <path-to-training-file> [--maxTokens 50] [--checkpoint
 If `--checkpoint` points to a file that already exists, it loads that checkpoint instead of retraining. Otherwise it trains a tokeniser and model from the given file and saves a checkpoint to that path once done.
 
 Example:
-
-```
-python main.py "Once upon a time" tokeniser/test.txt --maxTokens 30
+Actual output from a real run:                                                                                             
+                                                                                                                          
+```                                                                                                                        
+$ python3 main.py "Hi" "tokeniser/test.txt" --checkpoint "checkpoint.pt"                                                   
+Hi people are mimimes reed the in rest along to the of caled.
 ```
 
 ## Layout
