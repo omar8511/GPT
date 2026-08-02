@@ -47,7 +47,13 @@ from traininglogger.visualiser import visualiseLoss
 visualiseLoss("logs/run_<timestamp>.jsonl")
 ```
 
-which saves `loss_curve.png`. There's also an attention snapshot taken at the end of training (`logs/attentions_<timestamp>.pt`, one sentence's attention weights across all heads), which `visualiseAttention` turns into a heatmap per head.
+which saves `loss_curve.png`:
+
+![Loss curve](docs/loss_curve.png)
+
+There's also an attention snapshot taken at the end of training (`logs/attentions_<timestamp>.pt`, one sentence's attention weights across all heads), which `visualiseAttention` turns into a heatmap per head:
+
+![Attention heatmap](docs/attention_heatmap.png)
 
 ## Known limitations
 
