@@ -32,6 +32,9 @@ class PreProcessor:
                 self.byteEncoder[i] = chr(shiftCounter)
                 shiftCounter += 1
 
+        # Unicode much bigger than utf8 which is just until 256
+
+
         for k, v in self.byteEncoder.items():
             self.byteDecoder[v] = k
                 

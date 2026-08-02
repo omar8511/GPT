@@ -32,14 +32,14 @@ def train(filePath: str, config: Config, trainingPath: str) -> tuple[GPT, Tokeni
     for i in range(config.numEpochs):
         trainingStream = streamTrainingSequences(filePath, preprocesser, bpe, config.maxLen)
         for batch in batchSequences(trainingStream, config.batchSize):
-            input, target = buildTrainingPairs(batch)
-            maxLen = len(max(input, key=len))
+            inputSeqs, target = buildTrainingPairs(batch)
+            maxLen = len(max(inputSeqs, key=len))
             for t in target:
                 while len(t) < maxLen:
                     t.append(config.vocabSize)
             targetTensor = torch.tensor(target)
 
-            logits = gpt(input)
+            logits = gpt(inputSeqs)
             loss = torch.nn.functional.cross_entropy(logits.reshape(-1, config.vocabSize), targetTensor.reshape(-1), ignore_index=config.vocabSize)
             optimiser.zero_grad()
             loss.backward()
@@ -49,7 +49,7 @@ def train(filePath: str, config: Config, trainingPath: str) -> tuple[GPT, Tokeni
 
     attentions = [block.attention.attentionWeights for block in gpt.decoder.blocks]
     attentionFirstBatch = attentions[0][0]
-    firstBatch = input[0]
+    firstBatch = inputSeqs[0]
     realLen = len(firstBatch)
     trimmedAttentionsFirstBatch = attentionFirstBatch[:, :realLen, :realLen]
     logger.logAttentions(trimmedAttentionsFirstBatch, firstBatch)
