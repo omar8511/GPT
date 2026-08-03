@@ -37,9 +37,10 @@ def visualiseLoss(path: str) -> None:
 
         plt.xlabel("step")
         plt.ylabel("loss")
+        plt.yscale("log")  # loss spans orders of magnitude; log scale shows the convergence shape
         plt.title(f"Training loss (batchSize={header['batchSize']}, numEpochs={header['numEpochs']})")
         plt.legend()
-        plt.savefig("loss_curve.png")
+        plt.savefig("docs/loss_curve.png")
         plt.show()
     else:
         raise FileNotFoundError(f"No such log file: {path}")
@@ -76,6 +77,7 @@ def visualiseAttention(path: str) -> None:
         ax.set_title(f"head {headIdx}")
 
     fig.tight_layout()
-    fig.savefig("attention_heatmap.png")
+    fig.savefig("docs/attention_heatmap.png")
     plt.show()
+
 
