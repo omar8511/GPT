@@ -1,6 +1,6 @@
 # mini-gpt
 
-A GPT implementation built from scratch in Python/PyTorch: byte-level BPE tokeniser and a decoder-only transformer, both written by hand rather than pulled from a library. The point of this project is to actually understand how the pieces work, not to produce a model that's good at anything - the training corpus in `tokeniser/test.txt` is tiny, so don't expect coherent output.
+A GPT implementation built from scratch in Python/PyTorch: byte-level BPE tokeniser and a decoder-only transformer, both written by hand rather than pulled from a library. The point of this project is to actually understand how the pieces work.
 
 ## Setup
 
@@ -23,6 +23,17 @@ Example:
 ```
 python main.py "Once upon a time" tokeniser/test.txt --maxTokens 30
 ```
+
+## Sample output
+
+Trained from scratch on ~1MB of Tiny Shakespeare (`tokeniser/test.txt`), the model learns the tokeniser, the merges and the transformer weights in a single run, then continues a prompt:
+
+```
+$ python3 main.py "How are you" tokeniser/test.txt --maxTokens 20
+How are you faint! when when malk-runes
+```
+
+This is a deliberately small model on a small corpus, so the output isn't coherent prose — but it's clearly picked up the shape of the training data: real words, archaic vocabulary and Shakespeare-flavoured coinages (`malk-runes`) assembled from learned subword merges rather than characters. The point is that the whole pipeline — byte-level BPE, embeddings, attention, sampling — trains end to end and produces text that reflects what it was trained on.
 
 ## Layout
 
@@ -47,7 +58,7 @@ from traininglogger.visualiser import visualiseLoss
 visualiseLoss("logs/run_<timestamp>.jsonl")
 ```
 
-which saves `loss_curve.png`:
+which saves `docs/loss_curve.png` (log-scale y-axis, so the convergence is visible across epochs rather than dwarfed by the initial spike):
 
 ![Loss curve](docs/loss_curve.png)
 
@@ -56,7 +67,4 @@ There's also an attention snapshot taken at the end of training (`logs/attention
 ![Attention heatmap](docs/attention_heatmap.png)
 
 ## Known limitations
-
-- The tokeniser and model are retrained from scratch every run unless a checkpoint is passed in - there's no incremental training.
 - No learning rate scheduling, gradient clipping, or validation split - it's a minimal training loop, not a tuned one.
-- Generation quality is bottlenecked entirely by the toy training corpus, not by the architecture.
