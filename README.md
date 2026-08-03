@@ -1,6 +1,6 @@
 # mini-gpt
 
-A GPT implementation built from scratch in Python/PyTorch: byte-level BPE tokeniser and a decoder-only transformer, both written by hand rather than pulled from a library. The point of this project is to actually understand how the pieces work.
+A GPT implementation built from scratch in Python/PyTorch: byte-level BPE tokeniser and a decoder-only transformer, both written by hand rather than pulled from a library.
 
 ## Setup
 
@@ -19,21 +19,12 @@ python main.py "<prompt>" <path-to-training-file> [--maxTokens 50] [--checkpoint
 If `--checkpoint` points to a file that already exists, it loads that checkpoint instead of retraining. Otherwise it trains a tokeniser and model from the given file and saves a checkpoint to that path once done.
 
 Example:
-
+Actual output from a real run:                                                                                             
+                                                                                                                          
+```                                                                                                                        
+$ python3 main.py "Hi" "tokeniser/test.txt" --checkpoint "checkpoint.pt"                                                   
+Hi people are mimimes reed the in rest along to the of caled.
 ```
-python main.py "Once upon a time" tokeniser/test.txt --maxTokens 30
-```
-
-## Sample output
-
-Trained from scratch on ~1MB of Tiny Shakespeare (`tokeniser/test.txt`), the model learns the tokeniser, the merges and the transformer weights in a single run, then continues a prompt:
-
-```
-$ python3 main.py "How are you" tokeniser/test.txt --maxTokens 20
-How are you faint! when when malk-runes
-```
-
-This is a deliberately small model on a small corpus, so the output isn't coherent prose — but it's clearly picked up the shape of the training data: real words, archaic vocabulary and Shakespeare-flavoured coinages (`malk-runes`) assembled from learned subword merges rather than characters. The point is that the whole pipeline — byte-level BPE, embeddings, attention, sampling — trains end to end and produces text that reflects what it was trained on.
 
 ## Layout
 
