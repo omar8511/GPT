@@ -33,14 +33,11 @@ def train(filePath: str, config: Config, trainingPath: str) -> tuple[GPT, Tokeni
         trainingStream = streamTrainingSequences(filePath, preprocesser, bpe, config.maxLen)
         for batch in batchSequences(trainingStream, config.batchSize):
             inputSeqs, target = buildTrainingPairs(batch)
-            maxLen = len(max(inputSeqs, key=len))
-            for t in target:
-                while len(t) < maxLen:
-                    t.append(config.vocabSize)
+           
             targetTensor = torch.tensor(target)
 
             logits = gpt(inputSeqs)
-            loss = torch.nn.functional.cross_entropy(logits.reshape(-1, config.vocabSize), targetTensor.reshape(-1), ignore_index=config.vocabSize)
+            loss = torch.nn.functional.cross_entropy(logits.reshape(-1, config.vocabSize), targetTensor.reshape(-1))
             optimiser.zero_grad()
             loss.backward()
             optimiser.step()

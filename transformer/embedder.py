@@ -31,11 +31,6 @@ class Embedder(torch.nn.Module):
         copies = [row[:] for row in inputs]
         maxSeqLen = len(max(inputs, key=len))
 
-        for copy in copies:
-            while len(copy) < maxSeqLen:
-                copy.append(self.vocabSize)
-
-
         copyTensor = torch.tensor(copies)
         maskTensor = copyTensor == self.vocabSize
         tokenEmbeddings = self.embedding(copyTensor)

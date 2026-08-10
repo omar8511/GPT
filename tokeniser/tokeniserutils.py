@@ -30,7 +30,7 @@ def mergePair(symbols: tuple[str], pair: tuple[str, str]):
         return tuple(result)
 
 
-def streamFileSymbols(filePath: str, preprocessor: PreProcessor) -> Iterator[list[list[str]]]:
+def streamFileSymbols(filePath: str, preprocessor: PreProcessor, chunkLength: int = 256) -> Iterator[list[list[str]]]:
         """
         Returns an iterator to the tokenised text
 
@@ -78,11 +78,17 @@ def streamTrainingSequences(filePath: str, preprocessor: PreProcessor, bpe: BPE,
     Returns:
     Iterator over token id sequences, each of length at most maxLen and greater than 1
     """
+    buffer = []
+         
     for lineSymbols in streamFileSymbols(filePath, preprocessor):
         wordTokenLists = bpe.encode(lineSymbols)
-        for chunk in buildTrainingSequences(wordTokenLists, maxLen):
-            if len(chunk) > 1:
-                yield chunk
+        for wordToken in wordTokenLists:
+            buffer.extend(wordToken)
+
+        while len(buffer) >= maxLen + 1:
+            res = buffer[:maxLen + 1]
+            buffer = buffer[maxLen + 1:]
+            yield res
 
 def batchSequences(sequenceStream: Iterator[list[int]], batchSize: int) -> Iterator[list[list[int]]]:
     """
