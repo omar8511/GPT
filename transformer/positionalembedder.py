@@ -8,7 +8,7 @@ class PositionalEmbedder(torch.nn.Module):
         super().__init__()
 
         self.positionalEmbeddings = torch.nn.Embedding(config.maxLen, config.dModel)
-        torch.nn.init.normal_(self.embedding.weight, mean=0.0, std=0.02)
+        torch.nn.init.normal_(self.positionalEmbeddings.weight, mean=0.0, std=0.02)
 
     def forward(self, seqLength: int) -> torch.Tensor:
         """
