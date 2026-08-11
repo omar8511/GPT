@@ -23,7 +23,7 @@ class Logger:
         self.file.write(headerStr + "\n")
         self.file.flush()
 
-    def appendLoss(self, epoch: int, stepNumber: int, loss: float):
+    def appendLoss(self, epoch: int, stepNumber: int, loss: float, optional=None):
         """
         Appends a single loss record to the log file as a JSON line.
 
@@ -33,7 +33,7 @@ class Logger:
         loss: Loss value for this step
         """
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        lineJson = {"epoch": epoch, "step": stepNumber,"loss": loss, "timestamp": timestamp}
+        lineJson = {"epoch": epoch, "step": stepNumber,"loss": loss, "timestamp": timestamp, "Validation Loss": optional}
         line = json.dumps(lineJson)
 
         self.file.write(line + "\n")

@@ -12,6 +12,8 @@ def visualiseLoss(path: str) -> None:
     """
     steps = []
     losses = []
+    valSteps = []
+    valLosses = []
     epochBoundaries = []
     lastEpoch = None
 
@@ -26,11 +28,29 @@ def visualiseLoss(path: str) -> None:
                     steps.append(step)
                     losses.append(loss)
 
+                    # validation only runs every evalEvery steps, so it needs its own x axis
+                    valLoss = record.get("Validation Loss")
+                    if valLoss is not None:
+                        valSteps.append(step)
+                        valLosses.append(valLoss)
+
                     if record["epoch"] != lastEpoch:
                         epochBoundaries.append(record["step"])
                         lastEpoch = record["epoch"]
 
-        plt.plot(steps, losses, label="loss")
+        plt.plot(steps, losses, label="train")
+
+        if valLosses:
+            plt.plot(valSteps, valLosses, label="validation")
+
+            # the point where validation stops improving is where overfitting starts
+            bestIdx = min(range(len(valLosses)), key=lambda i: valLosses[i])
+            plt.axvline(x=valSteps[bestIdx], color="red", linestyle=":", alpha=0.8)
+            plt.annotate(
+                f"best val {valLosses[bestIdx]:.3f} @ step {valSteps[bestIdx]}",
+                xy=(valSteps[bestIdx], valLosses[bestIdx]),
+                fontsize=8,
+            )
 
         for b in epochBoundaries:
             plt.axvline(x=b, color="gray", linestyle="--", alpha=0.5)
@@ -38,7 +58,7 @@ def visualiseLoss(path: str) -> None:
         plt.xlabel("step")
         plt.ylabel("loss")
         plt.yscale("log")  # loss spans orders of magnitude; log scale shows the convergence shape
-        plt.title(f"Training loss (batchSize={header['batchSize']}, numEpochs={header['numEpochs']})")
+        plt.title(f"Loss (batchSize={header['batchSize']}, numEpochs={header['numEpochs']})")
         plt.legend()
         plt.savefig("docs/loss_curve.png")
         plt.show()

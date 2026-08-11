@@ -30,7 +30,7 @@ def mergePair(symbols: tuple[str], pair: tuple[str, str]):
         return tuple(result)
 
 
-def streamFileSymbols(filePath: str, preprocessor: PreProcessor, chunkLength: int = 256) -> Iterator[list[list[str]]]:
+def streamFileSymbols(filePath: str, preprocessor: PreProcessor) -> Iterator[list[list[str]]]:
         """
         Returns an iterator to the tokenised text
 
@@ -65,7 +65,7 @@ def buildTrainingSequences(wordTokenLists: list[list[int]], maxLen: int) -> list
       return [flat[i:i+maxLen] for i in range(0, len(flat), maxLen)]
 
     
-def streamTrainingSequences(filePath: str, preprocessor: PreProcessor, bpe: BPE, maxLen: int) -> Iterator[list[int]]:
+def streamTrainingSequences(inputStream: Iterator[list[list[str]]], bpe: BPE, maxLen: int) -> Iterator[list[int]]:
     """
     Streams training-ready token sequences from a file, one chunk at a time
 
@@ -80,7 +80,7 @@ def streamTrainingSequences(filePath: str, preprocessor: PreProcessor, bpe: BPE,
     """
     buffer = []
          
-    for lineSymbols in streamFileSymbols(filePath, preprocessor):
+    for lineSymbols in inputStream:
         wordTokenLists = bpe.encode(lineSymbols)
         for wordToken in wordTokenLists:
             buffer.extend(wordToken)
@@ -109,3 +109,13 @@ def batchSequences(sequenceStream: Iterator[list[int]], batchSize: int) -> Itera
             batch = []
     if batch:
         yield batch
+
+def countNonEmptyLines(path: str) -> int:
+    count = 0
+
+    with open(path, "r") as f:
+                 for line in f:
+                     if line.strip():
+                        count += 1
+                     
+    return count
