@@ -90,7 +90,7 @@ def streamTrainingSequences(inputStream: Iterator[list[list[str]]], bpe: BPE, ma
             buffer = buffer[maxLen + 1:]
             yield res
 
-def batchSequences(sequenceStream: Iterator[list[int]], batchSize: int) -> Iterator[list[list[int]]]:
+def batchSequences(sequences: list[list[int]], batchSize: int) -> list[list[int]]:
     """
     Groups a stream of token sequences into batches
 
@@ -101,14 +101,16 @@ def batchSequences(sequenceStream: Iterator[list[int]], batchSize: int) -> Itera
     Returns:
     Iterator over batches, each a list of up to batchSize sequences
     """
+    res = []
     batch = []
-    for sequence in sequenceStream:
+    for sequence in sequences:
         batch.append(sequence)
         if len(batch) == batchSize:
-            yield batch
+            res.append(batch)
             batch = []
-    if batch:
-        yield batch
+
+    return res
+    
 
 def countNonEmptyLines(path: str) -> int:
     count = 0

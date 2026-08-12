@@ -13,3 +13,6 @@ class Config:
     numMerges: int = 500
     numEpochs: int = 25
     batchSize: int = 25
+    seed: int = 1234
+    valFraction: float = 0.1 # Split train / validation
+    evalEvery: int = 20 # How often to run the validaiton pass
