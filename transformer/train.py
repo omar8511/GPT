@@ -3,12 +3,13 @@ from tokeniser.bpe import BPE
 from tokeniser.trainer import Trainer
 from tokeniser.tokeniserutils import streamFileSymbols, streamTrainingSequences, batchSequences, countNonEmptyLines
 from transformer.gpt import GPT
-from transformer.transfomerutils import buildTrainingPairs
+from transformer.transfomerutils import buildTrainingPairs, getLr
 from tokeniser.tokeniser import Tokeniser
 from transformer.config import Config
 from transformer.checkpoint import saveCheckpoint
 from traininglogger.logger import Logger
 from itertools import islice
+import math 
 
 
 import torch
@@ -16,34 +17,51 @@ import torch
 
 def train(filePath: str, config: Config, trainingPath: str) -> tuple[GPT, Tokeniser]:
 
+    torch.manual_seed(config.seed)
+
     preprocesser = PreProcessor()
     stream = streamFileSymbols(filePath, preprocesser)
     trainer = Trainer(stream, config)
     merges, tokens = trainer.train_BPE()
     tokens.update(preprocesser.byteEncoder.values())
     bpe = BPE(merges, tokens)
-    config.vocabSize = len(tokens)    
+    config.vocabSize = len(tokens)   
+
     logger = Logger(config)
     gpt = GPT(config)
-    optimiser = torch.optim.AdamW(gpt.parameters())
+
+    parameterGroup1 = list(filter(lambda p: p.dim() >= 2, gpt.parameters()))
+    parameterGroup2 = list(filter(lambda p: p.dim() < 2, gpt.parameters()))
+    optimiser = torch.optim.AdamW(
+      [{"params": parameterGroup1,   "weight_decay": config.weightDecay},
+       {"params": parameterGroup2, "weight_decay": 0.0}],
+      lr=config.maxLr)
+
     splitIndex = int(countNonEmptyLines(filePath) * (1 - config.valFraction))
     validationSymbolStream = islice(streamFileSymbols(filePath, preprocesser), splitIndex, None)
     valBatches = list(batchSequences(streamTrainingSequences(validationSymbolStream, bpe, config.maxLen), config.batchSize))
+    trainingSymbolStream = islice(streamFileSymbols(filePath, preprocesser), 0, splitIndex)
+    trainWindows = list(streamTrainingSequences(trainingSymbolStream, bpe, config.maxLen))
+    stepsPerEpoch = math.ceil(len(trainWindows) / config.batchSize)
+    totalSteps = stepsPerEpoch * config.numEpochs
 
     step = 0
     for i in range(config.numEpochs):
-        trainingSymbolStream = islice(streamFileSymbols(filePath, preprocesser), 0, splitIndex)
-        trainingStream = streamTrainingSequences(trainingSymbolStream, bpe, config.maxLen)
 
-        for batch in batchSequences(trainingStream, config.batchSize):
+        for batch in batchSequences(trainWindows, config.batchSize):
             inputSeqs, target = buildTrainingPairs(batch)
             targetTensor = torch.tensor(target)
             logits = gpt(inputSeqs)
             loss = torch.nn.functional.cross_entropy(logits.reshape(-1, config.vocabSize), targetTensor.reshape(-1))
             optimiser.zero_grad()
             loss.backward()
+            torch.nn.utils.clip_grad_norm_(gpt.parameters(), 1.0)
+            lr = getLr(step, config, totalSteps)
+            for group in optimiser.param_groups:
+                group["lr"] = lr
             optimiser.step()
-            logger.appendLoss(i, step, loss.item())
+        
+            logger.appendLoss(i, step, loss.item(), lr)
             step += 1
 
             if step % config.evalEvery == 0:

@@ -16,3 +16,7 @@ class Config:
     seed: int = 1234
     valFraction: float = 0.1 # Split train / validation
     evalEvery: int = 20 # How often to run the validaiton pass
+    maxLr: float = 1e-3
+    minLr: float = 1e-4
+    warmupSteps: int = 100
+    weightDecay: float = 0.1
