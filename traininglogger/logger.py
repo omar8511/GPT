@@ -23,17 +23,21 @@ class Logger:
         self.file.write(headerStr + "\n")
         self.file.flush()
 
-    def appendLoss(self, epoch: int, stepNumber: int, loss: float, optional=None):
+    def appendLoss(self, epoch: int, stepNumber: int, loss: float, valLoss: float = None, lr: float = None, gradNorm: float = None):
         """
         Appends a single loss record to the log file as a JSON line.
 
         Args:
         epoch: Current epoch number
         stepNumber: Global training step number
-        loss: Loss value for this step
+        loss: Training loss for this step
+        valLoss: Mean validation loss, or None on steps where no evaluation ran
+        lr: Learning rate used for this step
+        gradNorm: Gradient norm before clipping, so it is visible whether clipping fired
         """
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        lineJson = {"epoch": epoch, "step": stepNumber,"loss": loss, "timestamp": timestamp, "Validation Loss": optional}
+        lineJson = {"epoch": epoch, "step": stepNumber, "loss": loss, "timestamp": timestamp,
+                    "valLoss": valLoss, "lr": lr, "gradNorm": gradNorm}
         line = json.dumps(lineJson)
 
         self.file.write(line + "\n")

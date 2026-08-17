@@ -14,6 +14,8 @@ def visualiseLoss(path: str) -> None:
     losses = []
     valSteps = []
     valLosses = []
+    lrSteps = []
+    lrs = []
     epochBoundaries = []
     lastEpoch = None
 
@@ -29,38 +31,52 @@ def visualiseLoss(path: str) -> None:
                     losses.append(loss)
 
                     # validation only runs every evalEvery steps, so it needs its own x axis
-                    valLoss = record.get("Validation Loss")
+                    valLoss = record.get("valLoss")
                     if valLoss is not None:
                         valSteps.append(step)
                         valLosses.append(valLoss)
+
+                    lr = record.get("lr")
+                    if lr is not None:
+                        lrSteps.append(step)
+                        lrs.append(lr)
 
                     if record["epoch"] != lastEpoch:
                         epochBoundaries.append(record["step"])
                         lastEpoch = record["epoch"]
 
-        plt.plot(steps, losses, label="train")
+        fig, ax = plt.subplots()
+        ax.plot(steps, losses, label="train")
 
         if valLosses:
-            plt.plot(valSteps, valLosses, label="validation")
+            ax.plot(valSteps, valLosses, label="validation")
 
             # the point where validation stops improving is where overfitting starts
             bestIdx = min(range(len(valLosses)), key=lambda i: valLosses[i])
-            plt.axvline(x=valSteps[bestIdx], color="red", linestyle=":", alpha=0.8)
-            plt.annotate(
+            ax.axvline(x=valSteps[bestIdx], color="red", linestyle=":", alpha=0.8)
+            ax.annotate(
                 f"best val {valLosses[bestIdx]:.3f} @ step {valSteps[bestIdx]}",
                 xy=(valSteps[bestIdx], valLosses[bestIdx]),
                 fontsize=8,
             )
 
         for b in epochBoundaries:
-            plt.axvline(x=b, color="gray", linestyle="--", alpha=0.5)
+            ax.axvline(x=b, color="gray", linestyle="--", alpha=0.5)
 
-        plt.xlabel("step")
-        plt.ylabel("loss")
-        plt.yscale("log")  # loss spans orders of magnitude; log scale shows the convergence shape
-        plt.title(f"Loss (batchSize={header['batchSize']}, numEpochs={header['numEpochs']})")
-        plt.legend()
-        plt.savefig("docs/loss_curve.png")
+        ax.set_xlabel("step")
+        ax.set_ylabel("loss")
+        ax.set_yscale("log")  # loss spans orders of magnitude; log scale shows the convergence shape
+        ax.set_title(f"Loss (batchSize={header['batchSize']}, numEpochs={header['numEpochs']})")
+        ax.legend(loc="upper right")
+
+        # learning rate shares the x axis but lives on a different scale entirely
+        if lrs:
+            lrAx = ax.twinx()
+            lrAx.plot(lrSteps, lrs, color="green", alpha=0.4, linewidth=1)
+            lrAx.set_ylabel("learning rate", color="green")
+            lrAx.tick_params(axis="y", labelcolor="green")
+
+        fig.savefig("docs/loss_curve.png")
         plt.show()
     else:
         raise FileNotFoundError(f"No such log file: {path}")

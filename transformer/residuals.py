@@ -11,6 +11,7 @@ class Residuals(torch.nn.Module):
     def __init__(self, config: Config):
         super().__init__()
         self.layerNorm = LayerNorm(config)
+        self.dropout = torch.nn.Dropout(config.dropout)
 
 
     def forward(self, x: torch.Tensor, subLayer: Callable[[torch.Tensor], torch.Tensor]) -> torch.Tensor:
@@ -24,6 +25,6 @@ class Residuals(torch.nn.Module):
         Returns
         output - tensor of shape (..., dModel)
         """
-        output = x + subLayer(self.layerNorm(x))
+        output = x + self.dropout(subLayer(self.layerNorm(x)))
         return output
     

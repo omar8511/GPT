@@ -20,3 +20,4 @@ class Config:
     minLr: float = 1e-4
     warmupSteps: int = 100
     weightDecay: float = 0.1
+    dropout: float = 0.1
