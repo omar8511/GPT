@@ -61,7 +61,7 @@ def train(filePath: str, config: Config, trainingPath: str) -> tuple[GPT, Tokeni
                 group["lr"] = lr
             optimiser.step()
         
-            logger.appendLoss(i, step, loss.item(), lr)
+            logger.appendLoss(i, step, loss.item(), lr=lr)
             step += 1
 
             if step % config.evalEvery == 0:
@@ -78,13 +78,13 @@ def train(filePath: str, config: Config, trainingPath: str) -> tuple[GPT, Tokeni
 
                 gpt.train()
 
-
-    attentions = [block.attention.attentionWeights for block in gpt.decoder.blocks]
-    attentionFirstBatch = attentions[0][0]
-    firstBatch = inputSeqs[0]
-    realLen = len(firstBatch)
-    trimmedAttentionsFirstBatch = attentionFirstBatch[:, :realLen, :realLen]
-    logger.logAttentions(trimmedAttentionsFirstBatch, firstBatch)
+    if config.isDebug:
+        attentions = [block.attention.attentionWeights for block in gpt.decoder.blocks]
+        attentionFirstBatch = attentions[0][0]
+        firstBatch = inputSeqs[0]
+        realLen = len(firstBatch)
+        trimmedAttentionsFirstBatch = attentionFirstBatch[:, :realLen, :realLen]
+        logger.logAttentions(trimmedAttentionsFirstBatch, firstBatch)
 
     tokeniser = Tokeniser(preprocesser, bpe)
 

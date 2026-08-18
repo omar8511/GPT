@@ -15,6 +15,8 @@ class MultiHeadAttention(torch.nn.Module):
         self.wValue = torch.nn.Linear(self.dModel, self.dModel, bias=False)
         self.wOut = torch.nn.Linear(self.dModel, self.dModel, bias=False)
         self.dropout = torch.nn.Dropout(config.dropout)
+        self.isDebug = config.isDebug
+        self.attentionWeights = None
 
         # Input shape is batch, maxLen, dModel so we multiply rows and get 1 * dModel
         
@@ -61,7 +63,8 @@ class MultiHeadAttention(torch.nn.Module):
 
         weights = torch.softmax(AMasked, dim=-1)
         # Each Row sums to one
-        self.attentionWeights = weights.detach()
+        if self.isDebug:
+            self.attentionWeights = weights.detach()
 
         weights = self.dropout(weights)
 

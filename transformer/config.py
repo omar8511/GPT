@@ -21,3 +21,4 @@ class Config:
     warmupSteps: int = 100
     weightDecay: float = 0.1
     dropout: float = 0.1
+    isDebug: bool = False
