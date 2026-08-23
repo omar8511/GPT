@@ -18,6 +18,12 @@ class MultiHeadAttention(torch.nn.Module):
         self.isDebug = config.isDebug
         self.attentionWeights = None
 
+        self.causalMask = torch.register_buffer(
+            "causalMask",
+            torch.triu(torch.ones(config.maxLen, config.maxLen, dtype=torch.bool), diagonal=1),
+            persistent=False # Wont be saved as a parameter
+        )
+
         # Input shape is batch, maxLen, dModel so we multiply rows and get 1 * dModel
         
 
@@ -34,7 +40,7 @@ class MultiHeadAttention(torch.nn.Module):
         """
         Q, K, V = self.wQuery(x), self.wKey(x), self.wValue(x)
         (batch, maxLen, _) = x.shape
-        causalMask = torch.triu(torch.ones(maxLen, maxLen, dtype=torch.bool), diagonal=1)
+        causalMask = self.causalMask[:maxLen, :maxLen]
 
         # batch, maxlen, dModel
         dK = self.dModel // self.numHeads
