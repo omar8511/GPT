@@ -22,3 +22,4 @@ class Config:
     weightDecay: float = 0.1
     dropout: float = 0.1
     isDebug: bool = False
+    logEvery: int = 10

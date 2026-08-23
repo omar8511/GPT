@@ -55,13 +55,14 @@ def train(filePath: str, config: Config, trainingPath: str) -> tuple[GPT, Tokeni
             loss = torch.nn.functional.cross_entropy(logits.reshape(-1, config.vocabSize), targetTensor.reshape(-1))
             optimiser.zero_grad()
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(gpt.parameters(), 1.0)
+            gradNorm = torch.nn.utils.clip_grad_norm_(gpt.parameters(), 1.0)
             lr = getLr(step, config, totalSteps)
             for group in optimiser.param_groups:
                 group["lr"] = lr
             optimiser.step()
-        
-            logger.appendLoss(i, step, loss.item(), lr=lr)
+
+            if step % config.logEvery == 0:
+                logger.appendLoss(i, step, loss.item(), lr=lr, gradNorm=gradNorm)
             step += 1
 
             if step % config.evalEvery == 0:
