@@ -65,7 +65,7 @@ class MultiHeadAttention(torch.nn.Module):
         AScaled = A / math.sqrt(dK)
         # A is batch, numHeads, maxLen, maxLen, scaled dot product
 
-        AMasked = torch.masked_fill(AScaled, mask, -math.inf)
+        AMasked = torch.masked_fill(AScaled, mask, torch.finfo(AScaled.dtype).min)
 
         weights = torch.softmax(AMasked, dim=-1)
         # Each Row sums to one
