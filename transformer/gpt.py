@@ -14,7 +14,7 @@ class GPT(torch.nn.Module):
         self.LN = LayerNorm(config)
         self.LMBias = torch.nn.Parameter(torch.zeros(self.vocabSize))
 
-    def forward(self, inputs: list[list[int]]):
+    def forward(self, inputs: torch.Tensor):
         """
         Returns the model output given a list of words as their integer encodings from BPE
 
@@ -24,8 +24,8 @@ class GPT(torch.nn.Module):
         Returns:
         result - Tensor of size (batch, maxSeqLen, vocabSize) 
         """
-        mask, embeddings = self.embedder(inputs)
-        decodings = self.decoder(embeddings, mask)
+        embeddings = self.embedder(inputs)
+        decodings = self.decoder(embeddings)
         output = self.LN(decodings)
         result = torch.nn.functional.linear(output, self.embedder.embedding.weight[:self.vocabSize], self.LMBias)
         return result

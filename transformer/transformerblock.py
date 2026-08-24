@@ -13,19 +13,18 @@ class TransformerBlock(torch.nn.Module):
         self.feedForward = FeedForward(config)
 
 
-    def forward(self, x: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Passes input through residuals, attention and feedforward layer
 
         Args:
         x - Input tensor of shape (..., dModel)
-        mask - (batch, maxLen), True at positions that are padding and false at real tokens
 
         Returns:
         layerTwo - Tensor of shape (...., dModel)
         
         """
-        layerOne = self.residualsOne(x, lambda y: self.attention(y, mask))
+        layerOne = self.residualsOne(x, lambda y: self.attention(y))
         layerTwo = self.residualsTwo(layerOne, self.feedForward)
 
         return layerTwo

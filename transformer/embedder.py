@@ -17,26 +17,21 @@ class Embedder(torch.nn.Module):
         
 
     # when you do module(...) it implicitly calls forward for a tensor allows us to do self.embedder(input)
-    def forward(self, inputs: list[list[int]]) -> tuple[torch.Tensor, torch.Tensor]:
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """
-        Maps each token id to its learned embedding vector, padding sequences to equal length before lookup.
+        Maps each token id to its learned embedding vector,
 
         Args:
-        Inputs: list of tokens in their integer encoding 
+        Inputs: (batchSize, maxLen)
 
         Returns:
-        maskTensor (len(inputs), maxLength)
 
-        embeddings (len(inputs), maxLength, dModel)
+        embeddings (len(inputs), maxLen, dModel)
         """
-        copies = [row[:] for row in inputs]
-        maxSeqLen = len(max(inputs, key=len))
-
-        copyTensor = torch.tensor(copies)
-        maskTensor = copyTensor == self.vocabSize
-        tokenEmbeddings = self.embedding(copyTensor)
-        positionEmbeddings = self.positionalEncoder(maxSeqLen)
+        
+        tokenEmbeddings = self.embedding(inputs)
+        positionEmbeddings = self.positionalEncoder(inputs.shape[1])
 
 
         # broadcasts over so each maxLength block gets the same positional encodings which makes sense
-        return maskTensor, self.dropout(tokenEmbeddings + positionEmbeddings)
+        return self.dropout(tokenEmbeddings + positionEmbeddings)

@@ -29,18 +29,19 @@ def test_e2e_gpt(gpt_and_tokeniser):
     gpt, tokeniser, config = gpt_and_tokeniser
     encoded = tokeniser.encode("Hello")
     sequence = [tokenId for word in encoded for tokenId in word]
-    output = gpt([sequence])
+    output = gpt(torch.tensor([sequence]))
     assert output.shape == (1, len(sequence), config.vocabSize)
 
 def test_causal_mask_no_leakage():
     config = Config(vocabSize=20, dModel=32, numHeads=2, N=1, dFF=64, maxLen=16)
     gpt = GPT(config)
+    gpt.eval()  # dropout is stochastic per position and would break this comparison otherwise
 
     seqA = [3, 7, 12, 5, 9]
     seqB = [3, 7, 12, 1, 15]   
     divergeIdx = 3
 
-    output = gpt([seqA, seqB])   
+    output = gpt(torch.tensor([seqA, seqB]))
 
     # assert that positions 1 -> Diverge index are all the same 
     # Self attention is allowed so allow i == j 

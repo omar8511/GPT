@@ -18,7 +18,7 @@ class MultiHeadAttention(torch.nn.Module):
         self.isDebug = config.isDebug
         self.attentionWeights = None
 
-        self.causalMask = torch.register_buffer(
+        self.register_buffer(
             "causalMask",
             torch.triu(torch.ones(config.maxLen, config.maxLen, dtype=torch.bool), diagonal=1),
             persistent=False # Wont be saved as a parameter
@@ -27,13 +27,12 @@ class MultiHeadAttention(torch.nn.Module):
         # Input shape is batch, maxLen, dModel so we multiply rows and get 1 * dModel
         
 
-    def forward(self, x: torch.Tensor, maskTensor: torch.Tensor):
+    def forward(self, x: torch.Tensor):
         """
         Performs the Multi Head Attention's steps
 
         Args:
         x - Tensor of shape (batch, maxLen(acrossBatch), dModel)
-        maskTensor - (batch, maxLen), True at positions that are padding and false at real tokens
 
         Returns:
         output - Tensor of shape (batch, maxLen(acrossBatch), dModel)
@@ -60,12 +59,11 @@ class MultiHeadAttention(torch.nn.Module):
         K = torch.transpose(K, 2, 3) 
         # K is batch, numHeads, dK, maxLen
 
-        mask = torch.reshape(maskTensor, (batch, 1, 1, maxLen)) | causalMask
         A = Q @ K
         AScaled = A / math.sqrt(dK)
         # A is batch, numHeads, maxLen, maxLen, scaled dot product
 
-        AMasked = torch.masked_fill(AScaled, mask, torch.finfo(AScaled.dtype).min)
+        AMasked = torch.masked_fill(AScaled, causalMask, torch.finfo(AScaled.dtype).min)
 
         weights = torch.softmax(AMasked, dim=-1)
         # Each Row sums to one
