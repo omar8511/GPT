@@ -51,7 +51,7 @@ class BPE:
         for wordBytes in byteIdsByWord:
             byteIds.extend(wordBytes)
 
-        return bytes(byteIds).decode("utf-8")
+        return bytes(byteIds).decode("utf-8", errors="replace")
 
         
 
