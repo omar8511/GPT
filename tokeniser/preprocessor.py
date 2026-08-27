@@ -16,6 +16,7 @@ class PreProcessor:
         )
 
         self.regex = regex.compile(regex_pattern)
+        self.EOD = "<|endoftext|>"
 
         for i in range(SAFE_RANGE_ONE[0], SAFE_RANGE_ONE[1]):
             safeIndices.add(i)
@@ -91,12 +92,15 @@ class PreProcessor:
         [["H", "E", "L", "L", "O"], ["B", "Y", "E"]]
     
         """
-
-        words = self.regex.findall(text)
+        segments = text.split(self.EOD)
         res = []
-        for word in words:
-            utf8 = word.encode("utf-8")
-            res.append(self._utf8ToSafeUnicode(utf8))
+        for i, segment in enumerate(segments):
+            words = self.regex.findall(segment)
+            for word in words:
+                utf8 = word.encode("utf-8")
+                res.append(self._utf8ToSafeUnicode(utf8))
+            if i < len(segments) - 1:
+                res.append([self.EOD])
 
         return res
 
