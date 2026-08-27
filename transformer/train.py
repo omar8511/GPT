@@ -29,6 +29,7 @@ def train(filePath: str, config: Config, trainingPath: str) -> tuple[GPT, Tokeni
 
     logger = Logger(config)
     gpt = GPT(config)
+    gpt = gpt.to(config.device)
 
     parameterGroup1 = list(filter(lambda p: p.dim() >= 2, gpt.parameters()))
     parameterGroup2 = list(filter(lambda p: p.dim() < 2, gpt.parameters()))
@@ -50,8 +51,8 @@ def train(filePath: str, config: Config, trainingPath: str) -> tuple[GPT, Tokeni
 
         for batch in batchSequences(trainWindows, config.batchSize):
             inputSeqs, target = buildTrainingPairs(batch)
-            inputTensor = torch.tensor(inputSeqs)
-            targetTensor = torch.tensor(target)
+            inputTensor = torch.tensor(inputSeqs).to(config.device)
+            targetTensor = torch.tensor(target).to(config.device)
             logits = gpt(inputTensor)
             loss = torch.nn.functional.cross_entropy(logits.reshape(-1, config.vocabSize), targetTensor.reshape(-1))
             optimiser.zero_grad()
@@ -72,8 +73,8 @@ def train(filePath: str, config: Config, trainingPath: str) -> tuple[GPT, Tokeni
                     valTotalLoss = 0
                     for valBatch in valBatches:
                         inputSeqv, targetv = buildTrainingPairs(valBatch)
-                        inputTensorv = torch.tensor(inputSeqv)
-                        targetTensorv = torch.tensor(targetv)
+                        inputTensorv = torch.tensor(inputSeqv).to(config.device)
+                        targetTensorv = torch.tensor(targetv).to(config.device)
                         logitsv = gpt(inputTensorv)
                         valLoss = torch.nn.functional.cross_entropy(logitsv.reshape(-1, config.vocabSize), targetTensorv.reshape(-1))
                         valTotalLoss += valLoss.item()

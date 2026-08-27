@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import torch
 
 @dataclass
 class Config:
@@ -23,3 +24,4 @@ class Config:
     dropout: float = 0.1
     isDebug: bool = False
     logEvery: int = 10
+    device: str = "cuda" if torch.cuda.is_available() else "cpu"
