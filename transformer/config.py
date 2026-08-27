@@ -12,7 +12,8 @@ class Config:
     temperature: float =1.0
     k: int = 10
     numMerges: int = 500
-    numEpochs: int = 25
+    totalSteps: int = 1700 # No more numEpochs - random sampling from a memmap has no notion of "one pass"
+    numValBatches: int = 10 # Fixed number of val batches, sampled once and reused every eval
     batchSize: int = 25
     seed: int = 1234
     valFraction: float = 0.1 # Split train / validation

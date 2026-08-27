@@ -1,6 +1,7 @@
 from tokeniser.preprocessor import PreProcessor
 from tokeniser.bpe import BPE
 from typing import Iterator
+import numpy as np
 
 
 def mergePair(symbols: tuple[str], pair: tuple[str, str]):
@@ -111,6 +112,42 @@ def batchSequences(sequences: list[list[int]], batchSize: int) -> list[list[int]
 
     return res
     
+
+def tokeniseToDisk(symbolStream: Iterator[list[list[str]]], bpe: BPE, outPath: str, chunkSize: int = 1_000_000) -> int:
+    """
+    Encodes a symbol stream to token ids and writes them as a flat uint16
+    array to disk, in bounded-memory chunks rather than materialising the
+    whole corpus as a Python list at once.
+
+    Args:
+    symbolStream: Iterator over pre-tokenised lines (see streamFileSymbols)
+    bpe: Instance of BPE with merges/tokens already learned
+    outPath: File path to write the flat token array to
+    chunkSize: Number of tokens buffered in memory before each disk write
+
+    Returns:
+    Total number of tokens written
+    """
+    buffer = []
+    total = 0
+
+    with open(outPath, "wb") as f:
+        for lineSymbols in symbolStream:
+            for wordTokens in bpe.encode(lineSymbols):
+                buffer.extend(wordTokens)
+
+            while len(buffer) >= chunkSize:
+                chunk = buffer[:chunkSize]
+                np.array(chunk, dtype=np.uint16).tofile(f)
+                total += len(chunk)
+                buffer = buffer[chunkSize:]
+
+        if buffer:
+            np.array(buffer, dtype=np.uint16).tofile(f)
+            total += len(buffer)
+
+    return total
+
 
 def countNonEmptyLines(path: str) -> int:
     count = 0

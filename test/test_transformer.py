@@ -49,7 +49,7 @@ def test_causal_mask_no_leakage():
     assert torch.allclose(output[0, :divergeIdx, :], output[1, :divergeIdx, :])
 
 def test_train_smoke(tmp_path):
-    config = Config(numMerges=25, dModel=32, numHeads=2, N=1, dFF=64, maxLen=16, numEpochs=1, batchSize=8)
+    config = Config(numMerges=25, dModel=32, numHeads=2, N=1, dFF=64, maxLen=16, totalSteps=5, batchSize=8, evalEvery=5, warmupSteps=1)
     checkpointPath = str(tmp_path / "checkpoint.pt")
 
     gpt, tokeniser = train("tokeniser/test.txt", config, checkpointPath)
