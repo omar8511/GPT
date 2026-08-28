@@ -6,6 +6,7 @@ class Config:
     dModel: int = 512
     dFF: int = 2048
     numHeads: int = 8
+    N: int = 8
     maxLen: int = 256
     vocabSize: int = None
     temperature: float =1.0
