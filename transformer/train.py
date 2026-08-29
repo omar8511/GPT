@@ -64,8 +64,12 @@ def train(filePath: str, config: Config, trainingPath: str) -> tuple[GPT, Tokeni
         inputTensor = batch[:, :-1].to(config.device)
         targetTensor = batch[:, 1:].to(config.device)
 
-        logits = gpt(inputTensor)
-        loss = torch.nn.functional.cross_entropy(logits.reshape(-1, config.vocabSize), targetTensor.reshape(-1))
+        # autocast covers the forward only - backward reuses the dtypes it recorded.
+        # bf16 has fp32's exponent range so gradients cannot underflow, no GradScaler needed.
+        with torch.autocast(device_type=config.device, dtype=torch.bfloat16, enabled=config.useAmp):
+            logits = gpt(inputTensor)
+            loss = torch.nn.functional.cross_entropy(logits.reshape(-1, config.vocabSize), targetTensor.reshape(-1))
+
         optimiser.zero_grad()
         loss.backward()
         gradNorm = torch.nn.utils.clip_grad_norm_(gpt.parameters(), 1.0)
@@ -84,8 +88,10 @@ def train(filePath: str, config: Config, trainingPath: str) -> tuple[GPT, Tokeni
                 for valBatch in valBatches:
                     inputTensorv = valBatch[:, :-1].to(config.device)
                     targetTensorv = valBatch[:, 1:].to(config.device)
-                    logitsv = gpt(inputTensorv)
-                    valLoss = torch.nn.functional.cross_entropy(logitsv.reshape(-1, config.vocabSize), targetTensorv.reshape(-1))
+                    # same precision as training, or val loss would not be comparable
+                    with torch.autocast(device_type=config.device, dtype=torch.bfloat16, enabled=config.useAmp):
+                        logitsv = gpt(inputTensorv)
+                        valLoss = torch.nn.functional.cross_entropy(logitsv.reshape(-1, config.vocabSize), targetTensorv.reshape(-1))
                     valTotalLoss += valLoss.item()
                 logger.appendLoss(0, step, loss.item(), valTotalLoss / len(valBatches))
 

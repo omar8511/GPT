@@ -27,3 +27,4 @@ class Config:
     logEvery: int = 50
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
     bpeTrainLines: int = 300000
+    useAmp: bool = torch.cuda.is_available() # bf16 autocast - CUDA only, CPU stays fp32
