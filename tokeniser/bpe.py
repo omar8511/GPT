@@ -8,10 +8,12 @@ class BPE:
         self.mergeRanks = {merge : rank for rank, merge in enumerate(merges)}
         self.vocabMapping = {}
         self.integerMapping = {}
+        self.encodeCache = {}
         tokens = sorted(tokens)
         for i, tok in enumerate(tokens):
             self.vocabMapping[tok] = i
             self.integerMapping[i] = tok
+        
 
     def encode(self, text : list[list[str]]) -> list[list[int]]:
         """
@@ -53,8 +55,6 @@ class BPE:
 
         return bytes(byteIds).decode("utf-8", errors="replace")
 
-        
-
     def _tokeniseWordSymbols(self, wordSymbols: list[list[str]]) -> list[list[int]]:
         """
         Applies BPE merges to a list of words as symbols
@@ -71,8 +71,6 @@ class BPE:
         
         return res
         
-
-
     def helper(self, word: list[str]) -> list[str]: 
         """
         Applies priority merges to a word in its symbol representation 
@@ -84,6 +82,9 @@ class BPE:
         res: word with all merges applied in priority order
         
         """
+        key = tuple(word)
+        if key in self.encodeCache:
+            return self.encodeCache[key]
         curr = Node(word[0])
         head = curr
         prev = None 
@@ -141,6 +142,7 @@ class BPE:
             res.append(curr.val)
             curr = curr.next
 
+        self.encodeCache[key] = res
         return res
     
 
