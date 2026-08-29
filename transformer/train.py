@@ -7,7 +7,7 @@ from transformer.transfomerutils import getLr
 from transformer.memmapsampler import MemmapSampler
 from tokeniser.tokeniser import Tokeniser
 from transformer.config import Config
-from transformer.checkpoint import saveCheckpoint
+from transformer.checkpoint import saveCheckpoint, resumeCheckpoint
 from traininglogger.logger import Logger
 from itertools import islice
 import tempfile
@@ -59,7 +59,13 @@ def train(filePath: str, config: Config, trainingPath: str) -> tuple[GPT, Tokeni
 
     inputTensor = None
 
-    for step in range(config.totalSteps):
+    # Resume if a checkpoint from an interrupted run is sitting at trainingPath
+    startStep = 0
+    if os.path.exists(trainingPath):
+        startStep = resumeCheckpoint(trainingPath, gpt, optimiser)
+        print(f"resuming from step {startStep:,}")
+
+    for step in range(startStep, config.totalSteps):
         batch = trainSampler.sampleBatch(config.batchSize)
         inputTensor = batch[:, :-1].to(config.device)
         targetTensor = batch[:, 1:].to(config.device)
@@ -80,6 +86,9 @@ def train(filePath: str, config: Config, trainingPath: str) -> tuple[GPT, Tokeni
 
         if step % config.logEvery == 0:
             logger.appendLoss(0, step, loss.item(), lr=lr, gradNorm=gradNorm.item())
+
+        if step > 0 and step % config.checkpointEvery == 0:
+            saveCheckpoint(gpt, config, merges, tokens, trainingPath, optimiser=optimiser, step=step)
 
         if step % config.evalEvery == 0:
             gpt.eval()
@@ -107,7 +116,7 @@ def train(filePath: str, config: Config, trainingPath: str) -> tuple[GPT, Tokeni
 
     tokeniser = Tokeniser(preprocesser, bpe)
 
-    saveCheckpoint(gpt, config, merges, tokens, trainingPath)
+    saveCheckpoint(gpt, config, merges, tokens, trainingPath, optimiser=optimiser, step=config.totalSteps)
 
 
     return gpt, tokeniser

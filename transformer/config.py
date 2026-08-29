@@ -28,3 +28,4 @@ class Config:
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
     bpeTrainLines: int = 300000
     useAmp: bool = torch.cuda.is_available() # bf16 autocast - CUDA only, CPU stays fp32
+    checkpointEvery: int = 1000 # Overwrites one file, so an interrupted run loses at most this many steps
