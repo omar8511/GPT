@@ -6,7 +6,6 @@ class PositionalEmbedder(torch.nn.Module):
 
     def __init__(self, config: Config) -> None:
         super().__init__()
-        self.device = config.device
         self.positionalEmbeddings = torch.nn.Embedding(config.maxLen, config.dModel)
         torch.nn.init.normal_(self.positionalEmbeddings.weight, mean=0.0, std=0.02)
 
@@ -20,5 +19,5 @@ class PositionalEmbedder(torch.nn.Module):
         Returns:
         (seqLen, dModel) tensor of positional encodings
         """
-        positions = torch.arange(seqLength, device=self.device)
+        positions = torch.arange(seqLength, device=self.positionalEmbeddings.weight.device)
         return self.positionalEmbeddings(positions)

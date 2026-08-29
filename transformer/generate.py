@@ -45,7 +45,7 @@ def generate(gpt: GPT, tokeniser: Tokeniser, prompt: str, maxNewTokens: int, con
     with torch.no_grad():
         for _ in range(maxNewTokens):
             windowed = sequence[-config.maxLen:]
-            inputTensor = torch.tensor([windowed])
+            inputTensor = torch.tensor([windowed]).to(config.device)
             logits = gpt(inputTensor)
             nextTokenLogits = logits[0, -1, :]
             nextToken = sampleNextToken(nextTokenLogits, config)

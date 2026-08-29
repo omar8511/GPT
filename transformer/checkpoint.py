@@ -61,6 +61,7 @@ def loadCheckpoint(path: str) -> tuple[GPT, Tokeniser, Config]:
 
     gpt = GPT(config)
     gpt.load_state_dict(checkpoint["state_dict"])
+    gpt = gpt.to(config.device)
 
     return gpt, tokeniser, config
 
