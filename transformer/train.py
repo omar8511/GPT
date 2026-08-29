@@ -22,8 +22,7 @@ def train(filePath: str, config: Config, trainingPath: str) -> tuple[GPT, Tokeni
     torch.manual_seed(config.seed)
 
     preprocesser = PreProcessor()
-    stream = streamFileSymbols(filePath, preprocesser)
-    trainer = Trainer(stream, config)
+    trainer = Trainer(islice(streamFileSymbols(filePath, preprocesser), 0, config.bpeTrainLines), config)
     merges, tokens = trainer.train_BPE()
     tokens.update(preprocesser.byteEncoder.values())
     bpe = BPE(merges, tokens)

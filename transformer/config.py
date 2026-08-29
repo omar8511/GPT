@@ -26,3 +26,4 @@ class Config:
     isDebug: bool = False
     logEvery: int = 50
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
+    bpeTrainLines: int = 300000
