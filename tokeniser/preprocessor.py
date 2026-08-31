@@ -17,6 +17,7 @@ class PreProcessor:
 
         self.regex = regex.compile(regex_pattern)
         self.EOD = "<|endoftext|>"
+        self.SEP = "<|assistant|>"
 
         for i in range(SAFE_RANGE_ONE[0], SAFE_RANGE_ONE[1]):
             safeIndices.add(i)
@@ -92,15 +93,18 @@ class PreProcessor:
         [["H", "E", "L", "L", "O"], ["B", "Y", "E"]]
     
         """
-        segments = text.split(self.EOD)
+        segments = regex.split(
+            rf"({regex.escape(self.EOD)}|{regex.escape(self.SEP)})",
+            text,
+            )
         res = []
-        for i, segment in enumerate(segments):
-            words = self.regex.findall(segment)
-            for word in words:
-                utf8 = word.encode("utf-8")
-                res.append(self._utf8ToSafeUnicode(utf8))
-            if i < len(segments) - 1:
-                res.append([self.EOD])
+        # Split in EOD, SEP but keep them and then if the segment is EOD or SEP append it else just as ususal
+        for segment in segments:
+            if segment in (self.EOD, self.SEP):
+                res.append([segment])
+            else:
+                for word in self.regex.findall(segment):
+                    res.append(self._utf8ToSafeUnicode(word.encode("utf-8")))
 
         return res
 
