@@ -1,3 +1,4 @@
+import torch
 import math
 
 from transformer.config import Config
@@ -40,3 +41,4 @@ def getLr(step: int, config: Config, totalSteps: int) -> float:
 
     # cos goes 1 -> -1 over the run, so this factor goes 1 -> 0
     return config.minLr + 0.5 * (config.maxLr - config.minLr) * (1 + math.cos(math.pi * progress))
+

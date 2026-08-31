@@ -53,8 +53,12 @@ def loadCheckpoint(path: str) -> tuple[GPT, Tokeniser, Config]:
     tokeniser: Tokeniser rebuilt from the saved merges/tokens
     config: Config the model was trained with
     """
-    checkpoint = torch.load(path, weights_only=False)
+    checkpoint = torch.load(path, weights_only=False, map_location="cpu")
     config = checkpoint["config"]
+
+    # device and amp describe the machine that trained the model, not this one
+    config.device = "cuda" if torch.cuda.is_available() else "cpu"
+    config.useAmp = torch.cuda.is_available()
 
     bpe = BPE(checkpoint["merges"], checkpoint["tokens"])
     tokeniser = Tokeniser(PreProcessor(), bpe)
@@ -79,7 +83,7 @@ def resumeCheckpoint(path: str, gpt: GPT, optimiser: torch.optim.Optimizer) -> i
     Returns:
     step: The global step to resume from, or 0 if the checkpoint predates step tracking
     """
-    checkpoint = torch.load(path, weights_only=False)
+    checkpoint = torch.load(path, weights_only=False, map_location="cpu")
 
     gpt.load_state_dict(checkpoint["state_dict"])
     if checkpoint.get("optimiser_state") is not None:

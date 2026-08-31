@@ -17,7 +17,10 @@ class PreProcessor:
 
         self.regex = regex.compile(regex_pattern)
         self.EOD = "<|endoftext|>"
-        self.SEP = "<|assistant|>"
+        # SEP is ordinary text, not a special token: the model was pretrained
+        # without it, so there is no embedding row for a reserved marker.
+        # Byte-level BPE encodes any string, so this tokenises with the existing vocab.
+        self.SEP = "\n\nStory:\n"
 
         for i in range(SAFE_RANGE_ONE[0], SAFE_RANGE_ONE[1]):
             safeIndices.add(i)
@@ -94,13 +97,13 @@ class PreProcessor:
     
         """
         segments = regex.split(
-            rf"({regex.escape(self.EOD)}|{regex.escape(self.SEP)})",
+            rf"({regex.escape(self.EOD)})",
             text,
             )
         res = []
-        # Split in EOD, SEP but keep them and then if the segment is EOD or SEP append it else just as ususal
+        # Split on EOD but keep it, then emit it atomically; everything else is ordinary text
         for segment in segments:
-            if segment in (self.EOD, self.SEP):
+            if segment == self.EOD:
                 res.append([segment])
             else:
                 for word in self.regex.findall(segment):

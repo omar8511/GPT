@@ -53,6 +53,7 @@ def sft(checkpointPath: str, examplePath: str, outPath: str, config) -> tuple:
     saved = torch.load(checkpointPath, weights_only=False, map_location="cpu")
     merges, tokens = saved["merges"], saved["tokens"]
 
+
     decayParams = [p for p in gpt.parameters() if p.dim() >= 2]
     noDecayParams = [p for p in gpt.parameters() if p.dim() < 2]
     optimiser = torch.optim.AdamW(
