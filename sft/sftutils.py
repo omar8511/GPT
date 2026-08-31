@@ -39,8 +39,24 @@ def maskPrompt(input: list[int], promptLen: int) -> list[int]:
     # -100 is a sentintel value for ignore_index in cross entropy
     return target
 
-def collateBatch(batch: list[tuple[str, str]], config: Config, tokeniser: Tokeniser) -> torch.Tensor:
-    batchLen = len(batch)
+def collateBatch(batch: list[tuple[str, str]], config: Config, tokeniser: Tokeniser) -> tuple[torch.Tensor, torch.Tensor]:
+    """
+    Turns instruction/response pairs into padded input and target tensors ready for the model
+
+    Examples are variable length so each is padded up to the longest in the batch.
+    The two sides pad with different values: inputs use the embedding's padding slot
+    because they are looked up as real indices, targets use -100 so cross entropy
+    skips them entirely - the same mechanism that masks the prompt.
+
+    Args:
+    batch: List of (instruction, response) pairs
+    config: Config providing vocabSize, which doubles as the padding token id
+    tokeniser: Instance of Tokeniser, must be the one the model was trained with
+
+    Returns:
+    inputs: (batch, seqLen) Tensor of token ids
+    targets: (batch, seqLen) Tensor, -100 at prompt and padding positions
+    """
     formatted = [formatExample(i, r, tokeniser) for i, r in batch]
     inputs = [seq[:-1] for seq, _ in formatted]
     targets = [maskPrompt(seq, pLen) for seq, pLen in formatted]

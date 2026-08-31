@@ -13,10 +13,11 @@ class Config:
     k: int = 10
     numMerges: int = 8000
     totalSteps: int = 36000
+    numEpochs: int = 3 # SFT is epoch-based over a small example set, unlike pretraining
     numValBatches: int = 10
     batchSize: int = 64
     seed: int = 1234
-    valFraction: float = 0.1 
+    valFraction: float = 0.1 # Train/val split
     evalEvery: int = 250 
     maxLr: float = 6e-4
     minLr: float = 6e-5
