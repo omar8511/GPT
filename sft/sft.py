@@ -7,6 +7,9 @@ from transformer.checkpoint import loadCheckpoint, saveCheckpoint
 from transformer.transfomerutils import getLr
 from traininglogger.logger import Logger
 from sft.sftutils import collateBatch
+from sft.lora.injectLoRA import injectLoRa
+from sft.lora.mergeLoRA import mergeLoRA
+
 
 
 def loadExamples(examplePath: str) -> list[tuple[str, str]]:
@@ -53,9 +56,11 @@ def sft(checkpointPath: str, examplePath: str, outPath: str, config) -> tuple:
     saved = torch.load(checkpointPath, weights_only=False, map_location="cpu")
     merges, tokens = saved["merges"], saved["tokens"]
 
+    if config.useLoRA:
+        injectLoRa(gpt, config)
 
-    decayParams = [p for p in gpt.parameters() if p.dim() >= 2]
-    noDecayParams = [p for p in gpt.parameters() if p.dim() < 2]
+    decayParams = [p for p in gpt.parameters() if p.dim() >= 2 and p.requires_grad] # only select adaptors else its a no op if not in Lora 
+    noDecayParams = [p for p in gpt.parameters() if p.dim() < 2 and p.requires_grad]
     optimiser = torch.optim.AdamW(
         [{"params": decayParams, "weight_decay": config.weightDecay},
          {"params": noDecayParams, "weight_decay": 0.0}],
@@ -119,6 +124,8 @@ def sft(checkpointPath: str, examplePath: str, outPath: str, config) -> tuple:
 
             step += 1
 
+    if config.useLoRA:
+        gpt = mergeLoRA(gpt)
     saveCheckpoint(gpt, config, merges, tokens, outPath, optimiser=optimiser, step=step)
 
     return gpt, tokeniser
