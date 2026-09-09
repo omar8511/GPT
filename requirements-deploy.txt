@@ -1,0 +1,8 @@
+# CPU-only torch: the default PyPI wheel pulls ~2.5GB of CUDA libraries that a
+# CPU Space will never execute. Kept separate from requirements.txt so local
+# development on macOS is unaffected.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.12.0+cpu
+regex==2026.6.28
+fastapi==0.141.1
+uvicorn==0.52.4

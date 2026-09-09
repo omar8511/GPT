@@ -1,0 +1,14 @@
+tinystories.txt
+venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+.git/
+.pytest_cache/
+docs/
+test/
+trained_model/*
+!trained_model/serve.pt
+Runpod
+Runpod.pub
+*.md

@@ -1,0 +1,23 @@
+# gcloud falls back to .gitignore when this file is absent, and .gitignore excludes
+# *.pt - which would upload a source tree with no weights, build cleanly, and crash
+# the container at startup. This file exists to keep trained_model/serve.pt in.
+.git/
+.gitignore
+venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+tinystories.txt
+docs/
+test/
+Runpod
+Runpod.pub
+*.md
+trained_model/checkpoint.pt
+trained_model/sft.pt
+trained_model/sft_lora.pt
+trained_model/logs/
+trained_model/samples.txt
+checkpoint.pt
+logs/
