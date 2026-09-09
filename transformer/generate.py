@@ -2,7 +2,7 @@ import torch
 from transformer.gpt import GPT
 from tokeniser.tokeniser import Tokeniser
 from transformer.config import Config
-
+from transformer.kvcache import KVCache
 
 
 def sampleNextToken(nextTokenLogits: torch.Tensor, config: Config) -> int:
@@ -41,17 +41,21 @@ def generate(gpt: GPT, tokeniser: Tokeniser, prompt: str, maxNewTokens: int, con
     """
     encoded = tokeniser.encode(prompt)
     sequence = [tokenId for word in encoded for tokenId in word]
-
+    cache = [KVCache() for _ in range(config.N)]
     gpt.eval()
+
+    if len(sequence) > config.maxLen:
+        sequence = sequence[-config.maxLen:]
+
+
+    nextInput = sequence
 
     with torch.no_grad():
         for _ in range(maxNewTokens):
-            windowed = sequence[-config.maxLen:]
-            inputTensor = torch.tensor([windowed]).to(config.device)
-            logits = gpt(inputTensor)
-            nextTokenLogits = logits[0, -1, :]
-            nextToken = sampleNextToken(nextTokenLogits, config)
-            sequence.append(nextToken)
+            logits = gpt(torch.tensor([nextInput]).to(config.device), cache = cache)
+            token = sampleNextToken(logits[0, -1, :], config)
+            sequence.append(token)
+            nextInput = [token]
 
     eowId = tokeniser.bpe.vocabMapping["/<w>"]
     

@@ -1,6 +1,7 @@
 import torch 
 import math
 from transformer.config import Config
+from transformer.kvcache import KVCache
 
 
 class MultiHeadAttention(torch.nn.Module):
@@ -27,41 +28,45 @@ class MultiHeadAttention(torch.nn.Module):
         # Input shape is batch, maxLen, dModel so we multiply rows and get 1 * dModel
         
 
-    def forward(self, x: torch.Tensor):
+    def forward(self, x: torch.Tensor, offset: int = 0, cache: KVCache = None):
         """
         Performs the Multi Head Attention's steps
 
         Args:
         x - Tensor of shape (batch, maxLen(acrossBatch), dModel)
+        offset - current index of the input
+        cache - KVCache instance
 
         Returns:
         output - Tensor of shape (batch, maxLen(acrossBatch), dModel)
         """
         Q, K, V = self.wQuery(x), self.wKey(x), self.wValue(x)
-        (batch, maxLen, _) = x.shape
-        causalMask = self.causalMask[:maxLen, :maxLen]
+        (batch, qLen, _) = x.shape
+        causalMask = self.causalMask[offset : offset + qLen, :offset + qLen]
 
-        # batch, maxlen, dModel
+        # batch, qLen, dModel
         dK = self.dModel // self.numHeads
 
 
-        Q = torch.reshape(Q, (batch, maxLen, self.numHeads, dK))
-        K = torch.reshape(K, (batch, maxLen, self.numHeads, dK))
-        V = torch.reshape(V, (batch, maxLen, self.numHeads, dK))
+        Q = torch.reshape(Q, (batch, qLen, self.numHeads, dK))
+        K = torch.reshape(K, (batch, qLen, self.numHeads, dK))
+        V = torch.reshape(V, (batch, qLen, self.numHeads, dK))
         # Batch each row of each matrix into a numHeads x dK matrix 
 
         Q = torch.transpose(Q, 1, 2) 
         K = torch.transpose(K, 1, 2) 
         V = torch.transpose(V, 1, 2) 
-        # batch, numHeads, maxLen, dK
+        # batch, numHeads, qLen, dK
 
+        if cache is not None:
+            K, V = cache.append(K, V)
 
         K = torch.transpose(K, 2, 3) 
-        # K is batch, numHeads, dK, maxLen
+        # K is batch, numHeads, dK, qLen
 
         A = Q @ K
         AScaled = A / math.sqrt(dK)
-        # A is batch, numHeads, maxLen, maxLen, scaled dot product
+        # A is batch, numHeads, qLen, qLen, scaled dot product
 
         AMasked = torch.masked_fill(AScaled, causalMask, torch.finfo(AScaled.dtype).min)
 
@@ -73,15 +78,15 @@ class MultiHeadAttention(torch.nn.Module):
         weights = self.dropout(weights)
 
         weightedSum = weights @ V
-        # (batch, numHeads, maxLen, dK)
+        # (batch, numHeads, qLen, dK)
 
         weightedSum = weightedSum.transpose(1, 2)
-        # (batch, maxLen, numHeads, dK)
+        # (batch, qLen, numHeads, dK)
 
-        weightedSum = torch.reshape(weightedSum, (batch, maxLen, self.dModel))
+        weightedSum = torch.reshape(weightedSum, (batch, qLen, self.dModel))
 
         output = self.wOut(weightedSum)
 
-        # (batch, maxLen, dModel)
+        # (batch, qLen, dModel)
         return output
 
