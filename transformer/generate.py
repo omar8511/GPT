@@ -87,9 +87,6 @@ def generate(gpt: GPT, tokeniser: Tokeniser, prompt: str, maxNewTokens: int, con
     if current:
         current.append(eowId)
         words.append(current)
-
-    gpt.train()
-
     
     return tokeniser.decode(words)
     
