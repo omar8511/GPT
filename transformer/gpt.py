@@ -14,17 +14,18 @@ class GPT(torch.nn.Module):
         self.LN = LayerNorm(config)
         self.LMBias = torch.nn.Parameter(torch.zeros(self.vocabSize))
 
-    def forward(self, inputs: torch.Tensor):
+    def forward(self, inputs: torch.Tensor, offset: int = 0):
         """
         Returns the model output given a list of words as their integer encodings from BPE
 
         Args:
         inputs - List of words as integer encodings from BPE
+        offset - current index of the input
 
         Returns:
         result - Tensor of size (batch, maxSeqLen, vocabSize) 
         """
-        embeddings = self.embedder(inputs)
+        embeddings = self.embedder(inputs, offset)
         decodings = self.decoder(embeddings)
         output = self.LN(decodings)
         result = torch.nn.functional.linear(output, self.embedder.embedding.weight[:self.vocabSize], self.LMBias)

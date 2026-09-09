@@ -9,15 +9,16 @@ class PositionalEmbedder(torch.nn.Module):
         self.positionalEmbeddings = torch.nn.Embedding(config.maxLen, config.dModel)
         torch.nn.init.normal_(self.positionalEmbeddings.weight, mean=0.0, std=0.02)
 
-    def forward(self, seqLength: int) -> torch.Tensor:
+    def forward(self, seqLength: int, offset: int = 0) -> torch.Tensor:
         """
         Returns a (seqLen, dModel) tensor of positional embeddings
 
         Args:
         seqLength: range that you need positional embeddings for
+        offset: starting index of the embeddings
 
         Returns:
         (seqLen, dModel) tensor of positional encodings
         """
-        positions = torch.arange(seqLength, device=self.positionalEmbeddings.weight.device)
+        positions = torch.arange(offset, offset + seqLength, device=self.positionalEmbeddings.weight.device)
         return self.positionalEmbeddings(positions)

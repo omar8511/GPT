@@ -42,6 +42,8 @@ def generate(gpt: GPT, tokeniser: Tokeniser, prompt: str, maxNewTokens: int, con
     encoded = tokeniser.encode(prompt)
     sequence = [tokenId for word in encoded for tokenId in word]
 
+    gpt.eval()
+
     with torch.no_grad():
         for _ in range(maxNewTokens):
             windowed = sequence[-config.maxLen:]
@@ -65,6 +67,8 @@ def generate(gpt: GPT, tokeniser: Tokeniser, prompt: str, maxNewTokens: int, con
     if current:
         current.append(eowId)
         words.append(current)
+
+    gpt.train()
 
     
     return tokeniser.decode(words)

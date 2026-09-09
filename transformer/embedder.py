@@ -17,12 +17,13 @@ class Embedder(torch.nn.Module):
         
 
     # when you do module(...) it implicitly calls forward for a tensor allows us to do self.embedder(input)
-    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
+    def forward(self, inputs: torch.Tensor, offset: int = 0) -> torch.Tensor:
         """
         Maps each token id to its learned embedding vector,
 
         Args:
         Inputs: (batchSize, maxLen)
+        offset: current index to embed from
 
         Returns:
 
@@ -30,7 +31,7 @@ class Embedder(torch.nn.Module):
         """
         
         tokenEmbeddings = self.embedding(inputs)
-        positionEmbeddings = self.positionalEncoder(inputs.shape[1])
+        positionEmbeddings = self.positionalEncoder(inputs.shape[1], offset)
 
 
         # broadcasts over so each maxLength block gets the same positional encodings which makes sense
