@@ -34,7 +34,7 @@ curl -X POST https://storyteller-1051990688087.europe-west2.run.app/generate \
 
 ## The model
 
-29.4M parameters — `dModel=512`, 8 layers, 8 heads, `dFF=2048`, `maxLen=256`, vocab 8258.
+29.6M parameters — `dModel=512`, 8 layers, 8 heads, `dFF=2048`, `maxLen=256`, vocab 8258.
 
 Pretrained on TinyStories (2.2 GB ≈ 1.08B tokens at the tokeniser's measured 2.06 bytes/token), then instruction-tuned on 98 hand-written examples.
 
@@ -62,6 +62,8 @@ Pretrained on TinyStories (2.2 GB ≈ 1.08B tokens at the tokeniser's measured 2
 | KV cache | 0.66 s | 6.6 ms |
 
 **2.7×**, and the gap widens with sequence length — cached decode is flat in the context length where recomputation is linear in it. Correctness is enforced by a test asserting the cached path matches full recomputation to `1e-5` at *every* decode step, not just the last.
+
+**Initialisation bug.** Every early run (22 Jul – 3 Aug, vocab 757, 500 merges) logged a first loss of ~339 against a random-guess baseline of `ln(757)` = 6.63. The LM head is weight-tied to the token embedding, which had inherited PyTorch's unit-normal default init.
 
 **LoRA.** Rank-8 adapters on all 48 `nn.Linear` layers: **589,824 trainable parameters, 1.99% of the model.** `B` is initialised to zero so the adapter is a no-op at init; `mergeLoRA` folds `W += scale·B@A` back into plain `Linear` layers so the result loads into an ordinary `GPT`.
 
