@@ -40,7 +40,7 @@ Pretrained on TinyStories (2.2 GB ≈ 1.08B tokens at the tokeniser's measured 2
 
 | | |
 | --- | --- |
-| Validation loss | **2.146** after 590M tokens |
+| Validation loss | **0.69** after 590M tokens |
 | Random-guess baseline | `ln(8258)` = 9.02 |
 | Verbatim 5-gram overlap with training corpus | 0/46 sampled |
 
